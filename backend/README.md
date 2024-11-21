@@ -64,7 +64,7 @@ $ pnpm run start:prod
 
 ## GraphQL
 
-The GraphQL playground is available at `http://localhost:3005/graphql`
+The GraphQL playground is available at `http://localhost:3177`
 
 ### Generating GraphQL
 
