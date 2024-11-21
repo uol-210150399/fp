@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - "127.0.0.1:5433:5432"
+    environment:
+      POSTGRES_USER: fourtytwo
+      POSTGRES_PASSWORD: fourtytwo
+      POSTGRES_DB: fourtytwo
+      DEBUG_SQL: "true"
+  
