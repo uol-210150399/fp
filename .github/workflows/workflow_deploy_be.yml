@@ -1,0 +1,121 @@
+name: Deploy Backend
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment to deploy (e.g., dev, staging, prod)'
+        default: 'dev'
+      aws_region:
+        required: true
+        type: string
+        description: 'AWS region for deployment'
+        default: 'us-east-2'
+      infra_dir:
+        required: true
+        type: string
+        description: 'Directory path to the Terraform infrastructure'
+        default: 'infra/dev'
+      node_app_dir:
+        required: true
+        type: string
+        description: 'Directory path to the Node.js application'
+      cluster_name:
+        required: true
+        type: string
+        description: 'ECS cluster name'
+      service_name:
+        required: true
+        type: string
+        description: 'ECS service name'
+      tag_name:
+        required: false
+        type: string
+        description: 'Docker image tag (e.g., v1.0.0)'
+
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      ECR_URL:
+        required: true
+
+jobs:
+  build_and_deploy:
+    name: Build and Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ inputs.aws_region }}
+      ECR_URL: ${{ secrets.ECR_URL }}
+      infra_dir: ${{ inputs.infra_dir }}
+      node_app_dir: ${{ inputs.node_app_dir }}
+      tag_name: ${{ inputs.tag_name }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          echo "ECR URL: ${{ secrets.ECR_URL }}"
+          echo "Tag: ${{ inputs.tag_name }}"
+          docker build ${{ inputs.node_app_dir }} -t "${{ secrets.ECR_URL }}:${{ inputs.tag_name }}"
+
+      - name: Login and Push to ECR
+        run: |
+
+          DOCKER_ROOT_URL="${{ secrets.ECR_URL }}"
+          aws ecr get-login-password | docker login --username AWS --password-stdin "$DOCKER_ROOT_URL"
+
+          DOCKER_URL="$DOCKER_ROOT_URL:${{ inputs.tag_name }}"
+          docker tag "${{ secrets.ECR_URL }}:${{ inputs.tag_name }}" "$DOCKER_URL"
+
+          docker push "$DOCKER_URL"
+
+      - name: Replace Tag in Task Definition
+        run: |
+
+          SED_PATTERN="s@${{ secrets.ECR_URL }}:.*@${{ secrets.ECR_URL }}:${{ inputs.tag_name }}\",@g"
+          for json in `ls $infra_dir/*.json`; do
+            echo "Updating $json"
+            sed -i -e "$SED_PATTERN" "$json"
+          done
+
+      - name: Configure AWS
+        run: |
+          AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
+          echo "::add-mask::$AWS_ACCESS_KEY_ID"
+
+          AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
+          echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
+
+          AWS_DEFAULT_REGION="${{ inputs.aws_region }}"
+          echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> $GITHUB_ENV
+
+      - name: Test AWS Credentials
+        run: |
+          aws sts get-caller-identity >> /dev/null 2>&1
+
+      - name: Initialize Terraform
+        run: |
+          cd "$infra_dir" && terraform init
+
+      - name: Terraform Plan
+        run: |
+          cd "$infra_dir" && terraform plan -var-file="inputs.tfvars"
+
+      - name: Terraform Apply
+        run: |
+          cd "$infra_dir" && terraform apply -var-file="inputs.tfvars" --auto-approve
+
+      - name: ECS Force New Deployment
+        run: |
+          aws ecs update-service --cluster ${{ inputs.cluster_name }} --service ${{ inputs.service_name }} --force-new-deployment

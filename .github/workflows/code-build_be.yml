@@ -1,0 +1,53 @@
+name: Backend Code Build
+
+on:
+  pull_request:
+    branches:
+      - '*'
+    paths:
+      - 'backend/**' # Only trigger the workflow if changes are made within the backend directory
+
+jobs:
+  backend_code_build:
+    name: Lint, Install and Test Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm globally
+        run: npm install -g pnpm
+        working-directory: backend
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: backend
+
+      - name: Run code linting
+        run: pnpm run check
+        working-directory: backend
+
+      - name: Run code generation
+        run: pnpm run codegen
+        working-directory: backend
+
+      - name: Run tests with coverage
+        run: npm test -- --coverage
+        working-directory: backend
+
+      - name: Build the app
+        run: pnpm run build
+        working-directory: backend
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/coverage
+
+
