@@ -93,3 +93,12 @@ $ pnpm run check
 $ pnpm run delint
 ```
 
+
+## Docker
+```
+# Build the Docker image
+docker build -t backend .
+
+# Run the container, mapping port 3005
+docker run -p 3005:3005 backend
+```
