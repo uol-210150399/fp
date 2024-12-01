@@ -24,4 +24,4 @@ jobs:
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_DEV_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEV_SECRET_ACCESS_KEY }}
-      ECR_URL: '038462754274.dkr.ecr.us-east-2.amazonaws.com/okemilli-dev-ecr'
+      ECR_URL: '038462754274.dkr.ecr.us-east-1.amazonaws.com/okmillie-dev-ecr'
