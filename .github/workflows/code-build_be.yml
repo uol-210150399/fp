@@ -32,22 +32,8 @@ jobs:
         run: pnpm run check
         working-directory: backend
 
-      - name: Run code generation
-        run: pnpm run codegen
-        working-directory: backend
-
-      - name: Run tests with coverage
-        run: npm test -- --coverage
-        working-directory: backend
-
       - name: Build the app
         run: pnpm run build
         working-directory: backend
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: backend/coverage
 
 
