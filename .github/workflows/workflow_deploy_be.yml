@@ -17,7 +17,7 @@ on:
         required: true
         type: string
         description: 'Directory path to the Terraform infrastructure'
-        default: 'infra/terraform/environment/dev'
+        default: 'infra/terraform/environments/dev'
       node_app_dir:
         required: true
         type: string

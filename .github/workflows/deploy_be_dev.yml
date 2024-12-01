@@ -18,7 +18,7 @@ jobs:
     with:
       environment: 'dev'
       aws_region: 'us-east-1'
-      infra_dir: 'infra/terraform/environment/dev'
+      infra_dir: 'infra/terraform/environments/dev'
       node_app_dir: 'backend'
       cluster_name: 'okemilli-dev-cluster'
       service_name: 'okemilli-dev-service'
