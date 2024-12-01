@@ -8,12 +8,10 @@ terraform {
   }
   backend "s3" {
     bucket = "okmillie-dev-tf-state"
-    key    = "s3_state_bucket/terraform.tfstate"
-    region = "us-east-2"
-
-
-    dynamodb_table = "okmillie-dev-tf-state-lock"
-    encrypt        = true
+    key    = "env/dev/terraform.tfstate"
+    region = "us-east-1"
+    # dynamodb_table = "okmillie-dev-tf-state-lock"
+    # encrypt        = true
   }
 }
 

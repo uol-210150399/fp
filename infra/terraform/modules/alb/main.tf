@@ -1,3 +1,44 @@
+
+# ACM Certificate
+resource "aws_acm_certificate" "main" {
+  domain_name       = var.domain_name  # This will be api.dev.okmillies.com
+  validation_method = "DNS"
+  
+  tags = {
+    Name        = "${var.service_name}-${var.service_environment}-certificate"
+    Environment = var.service_environment
+  }
+}
+
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  zone_id         = var.route53_zone_id
+  name            = each.value.name
+  records         = [each.value.record]
+  type            = each.value.type
+  ttl             = 60
+  allow_overwrite = true
+}
+
+resource "aws_route53_record" "alb" {
+  zone_id = var.route53_zone_id
+  name    = var.domain_name  # This will be api.dev.okmillies.com
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.main.dns_name
+    zone_id               = aws_lb.main.zone_id
+    evaluate_target_health = true
+  }
+}
+
 # Application Load Balancer (ALB) Configuration
 resource "aws_lb" "main" {
   name               = "${var.service_name}-${var.service_environment}-lb"
@@ -35,26 +76,6 @@ resource "aws_lb_listener" "alb_port_443_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.main.arn
   }
-}
-
-# ACM Certificate
-resource "aws_acm_certificate" "main" {
-  domain_name       = var.ecs_certificate_primary_domain
-  validation_method = "EMAIL"
-  tags = {
-    Name        = "ACM Certificate"
-    Description = "ACM Certificate"
-  }
-
-  dynamic "validation_option" {
-    for_each = var.ecs_certificate_domains
-    content {
-      domain_name       = validation_option.key
-      validation_domain = validation_option.value["validation_domain"]
-    }
-  }
-
-  subject_alternative_names = keys(var.ecs_certificate_domains)
 }
 
 # ALB Target Group for ECS Tasks

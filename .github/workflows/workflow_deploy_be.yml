@@ -12,12 +12,12 @@ on:
         required: true
         type: string
         description: 'AWS region for deployment'
-        default: 'us-east-2'
+        default: 'us-east-1'
       infra_dir:
         required: true
         type: string
         description: 'Directory path to the Terraform infrastructure'
-        default: 'infra/dev'
+        default: 'infra/terraform/environment/dev'
       node_app_dir:
         required: true
         type: string

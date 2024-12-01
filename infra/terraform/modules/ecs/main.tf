@@ -20,7 +20,7 @@ resource "aws_ecs_task_definition" "main" {
   family                = "${var.service_name}-${var.service_environment}-service"
   network_mode          = "awsvpc"
   execution_role_arn    = aws_iam_role.ecs-instance-role.arn
-  container_definitions = file("./launch_template_container_definition.json")
+  container_definitions = file(var.container_definitions_file)
 
 
   requires_compatibilities = ["FARGATE"]

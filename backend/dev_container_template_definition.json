@@ -1,0 +1,28 @@
+[
+  {
+    "name": "okmillie-dev-service",
+    "image": "038462754274.dkr.ecr.us-east-2.amazonaws.com/okmillie-dev-ecr:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "key": "okmillie-dev",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "portMappings": [
+      {
+        "containerPort": 3177,
+        "hostPort": 3177
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/okmillie-dev-service",
+        "awslogs-region": "us-east-2",
+        "awslogs-stream-prefix": "web-service"
+      }
+    },
+    "secrets": []
+  }
+]

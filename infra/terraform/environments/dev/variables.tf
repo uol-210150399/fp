@@ -1,7 +1,12 @@
+variable "module_source_path" {
+  type        = string
+  default = "../../modules"
+}
+
 variable "aws_region" {
   description = "AWS region to deploy the resources in"
   type        = string
-  default     = "us-east-2"
+  default     = "us-east-1"
 }
 
 variable "service_environment" {
@@ -56,13 +61,13 @@ variable "vpc_subnet_ipv4_private_2" {
 variable "vpc_availability_zone_1" {
   description = "The availability zone for public and private subnet 1"
   type        = string
-  default     = "us-east-2a"
+  default     = "us-east-1a"
 }
 
 variable "vpc_availability_zone_2" {
   description = "The availability zone for public and private subnet 2"
   type        = string
-  default     = "us-east-2b"
+  default     = "us-east-1b"
 }
 
 
@@ -86,6 +91,24 @@ variable "ecs_desired_scale" {
   description = "Desired scale for ECS service"
   type        = number
   default     = 1
+}
+
+variable "ecs_certificate_domains" {
+  description = "Domains to create certificates for"
+  type        = list(string)
+  default     = ["api.dev.okmillies.com"]
+}
+
+variable "ecs_certificate_primary_domain" {
+  description = "Primary Domain Certificate for ACM"
+  type        = string
+  default     = "api.dev.okmillies.com"
+}
+
+variable "domain_name" {
+  description = "The domain name for the certificate (e.g., dev.okmillies.com)"
+  type        = string
+  default     = "api.dev.okmillies.com"
 }
 
 variable "ecs_container_insights" {
@@ -143,4 +166,32 @@ variable "image_tag_mutability" {
   description = "The mutability of the image tag"
   type        = string
   default     = "MUTABLE"
+}
+
+# ################################################################
+# Section - DynamoDB
+# ################################################################
+
+variable "table_name" {
+  type        = string
+  description = "Name of the DynamoDB table"
+  default     = "okmillie-dev"
+}
+
+variable "billing_mode" {
+  type        = string
+  description = "Billing mode for DynamoDB (PAY_PER_REQUEST or PROVISIONED)"
+  default     = "PAY_PER_REQUEST"
+}
+
+variable "hash_key" {
+  type        = string
+  description = "Primary key (partition key) for the table"
+  default     = "PK"
+}
+
+variable "range_key" {
+  type        = string
+  description = "Sort key (optional) for the table"
+  default     = "SK"
 }

@@ -48,23 +48,27 @@ variable "vpc_ipv4_cidr" {
   default     = "10.200.0.0/16"
 }
 
+
 variable "ecs_certificate_domains" {
   description = "Domains to create certificates for"
-  type = map(object({
-    validation_domain = string
-  }))
-  default = {
-    "set_ecs_certificate_domains.example.com" = {
-      validation_domain : "example.com"
-    }
-  }
+  type        = list(string)
 }
 
 variable "ecs_certificate_primary_domain" {
   description = "Primary Domain Certificate for ACM"
   type        = string
-  default     = "set_ecs_certificate_primary_domain.example.com"
 }
+
+variable "domain_name" {
+  description = "The domain name for the certificate (e.g., dev.okmillies.com)"
+  type        = string
+}
+
+variable "route53_zone_id" {
+  description = "The Route53 hosted zone ID"
+  type        = string
+}
+
 variable "vpc_public_subnets" {
   description = "Public subnets for the VPC"
   type        = list(string)
