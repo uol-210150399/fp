@@ -1,11 +1,14 @@
 name: Backend Code Build
 
 on:
-  pull_request:
-    branches:
-      - '*'
-    paths:
-      - 'backend/**' # Only trigger the workflow if changes are made within the backend directory
+  workflow_dispatch:
+
+# on:
+#   pull_request:
+#     branches:
+#       - '*'
+#     paths:
+#       - 'backend/**' # Only trigger the workflow if changes are made within the backend directory
 
 jobs:
   backend_code_build:
