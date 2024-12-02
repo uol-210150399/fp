@@ -6,6 +6,8 @@ import { type Request } from 'express';
 import configuration from './config/configuration';
 import { LoggerModule, Params } from 'nestjs-pino';
 import { v4 as uuidv4 } from 'uuid';
+import { DynamoDBModule } from './dynamodb/dynamodb.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,6 +35,7 @@ import { v4 as uuidv4 } from 'uuid';
         };
       },
     }),
+    DynamoDBModule,
   ],
   controllers: [AppController],
   providers: [AppService],

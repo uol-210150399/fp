@@ -102,3 +102,18 @@ docker build -t backend .
 # Run the container, mapping port 3005
 docker run -p 3005:3005 backend
 ```
+
+
+## DynamoDB
+```
+$ docker-compose up
+```
+
+You can verify that the DynamoDB container is running by running the following command:
+```
+aws dynamodb list-tables \
+--endpoint-url http://localhost:4002 \
+--debug
+```
+
+You can view the DynamoDB GUI at `http://localhost:8001`

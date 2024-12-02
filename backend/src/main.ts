@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import { createTables } from './dynamodb/tables.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -12,6 +13,10 @@ async function bootstrap() {
   const port = configService.get<number>('port');
   if (!port) {
     throw new Error('PORT is not defined');
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    await createTables();
   }
   await app.listen(port);
 }
