@@ -21,7 +21,7 @@ jobs:
       infra_dir: 'infra/terraform/environments/dev'
       node_app_dir: 'backend'
       cluster_name: 'okmillie-dev-cluster'
-      service_name: 'okemilli-dev-service'
+      service_name: 'okmillie-dev-service'
       tag_name: 'latest'
 
     secrets:
