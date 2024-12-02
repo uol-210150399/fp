@@ -1,4 +1,5 @@
 import {
+  BillingMode,
   CreateTableCommand,
   KeyType,
   ScalarAttributeType,
@@ -10,17 +11,14 @@ export const createTables = async () => {
 
   const tables = [
     {
-      TableName: 'Users',
+      TableName: 'okmillie',
       KeySchema: [
         { AttributeName: 'id', KeyType: 'HASH' as KeyType }, // Partition key
       ],
       AttributeDefinitions: [
         { AttributeName: 'id', AttributeType: 'S' as ScalarAttributeType }, // String type
       ],
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 5,
-        WriteCapacityUnits: 5,
-      },
+      BillingMode: 'PAY_PER_REQUEST' as BillingMode
     },
   ];
 

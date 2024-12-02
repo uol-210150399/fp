@@ -17,7 +17,7 @@ export class AppController {
   @Post('users')
   async createUser(@Body() userData: any) {
     const id = Date.now().toString();
-    await this.dynamoDBService.createItem('Users', {
+    await this.dynamoDBService.createItem('okmillie', {
       id,
       ...userData,
     });
@@ -26,7 +26,7 @@ export class AppController {
 
   @Get('users/:id')
   async getUser(@Param('id') id: string) {
-    const response = await this.dynamoDBService.getItem('Users', { id });
+    const response = await this.dynamoDBService.getItem('okmillie', { id });
     return response.Item || null;
   }
 }
