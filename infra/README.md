@@ -60,10 +60,10 @@ terraform fmt
 terraform validate
 
 # Plan deployment
-terraform plan --var-file="input.tfvars"
+terraform plan --var-file="inputs.tfvars"
 
 # Apply changes
-terraform apply --var-file="input.tfvars"
+terraform apply --var-file="inputs.tfvars"
 ```
 
 ## Best Practices
