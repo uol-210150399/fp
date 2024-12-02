@@ -1,7 +1,7 @@
 [
   {
     "name": "okmillie-dev-service",
-    "image": "038462754274.dkr.ecr.us-east-2.amazonaws.com/okmillie-dev-ecr:latest",
+    "image": "038462754274.dkr.ecr.us-east-1.amazonaws.com/okmillie-dev-ecr:latest",
     "cpu": 256,
     "memory": 512,
     "essential": true,
