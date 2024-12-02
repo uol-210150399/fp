@@ -20,7 +20,7 @@ jobs:
       aws_region: 'us-east-1'
       infra_dir: 'infra/terraform/environments/dev'
       node_app_dir: 'backend'
-      cluster_name: 'okemilli-dev-cluster'
+      cluster_name: 'okmillie-dev-cluster'
       service_name: 'okemilli-dev-service'
       tag_name: 'latest'
 
