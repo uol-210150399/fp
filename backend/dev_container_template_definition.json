@@ -12,7 +12,18 @@
     "portMappings": [
       {
         "containerPort": 3177,
-        "hostPort": 3177
+        "hostPort": 3177,
+        "protocol": "tcp"
+      }
+    ],
+    "environment": [
+      {
+        "name": "NODE_ENV",
+        "value": "development"
+      },
+      {
+        "name": "PORT",
+        "value": "3177"
       }
     ],
     "logConfiguration": {
