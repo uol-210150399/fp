@@ -1,0 +1,135 @@
+type ProjectQuery {
+  get(input: ProjectGetInput!): ProjectGetOutput!
+  list(input: ProjectListInput!): ProjectListOutput!
+}
+
+type ProjectMutation {
+  create(input: ProjectCreateInput!): ProjectCreateOutput!
+  update(input: ProjectUpdateInput!): ProjectUpdateOutput!
+  delete(input: ProjectDeleteInput!): ProjectDeleteOutput!
+}
+
+# Project Get
+input ProjectGetInput {
+  id: String!
+}
+
+union ProjectGetOutput = ProjectGetSuccess | ProjectGetFailure
+
+type ProjectGetSuccess {
+  project: Project!
+}
+
+type ProjectGetFailure {
+  error: ProjectGetError!
+}
+
+type ProjectGetError {
+  message: String!
+}
+
+# Project List
+input ProjectListInput {
+  pagination: PaginationInput!
+  filter: ProjectListFilterInput
+}
+
+input ProjectListFilterInput {
+  teamId: String!
+}
+
+union ProjectListOutput = ProjectListSuccess | ProjectListFailure
+
+type ProjectListSuccess {
+  projects: ProjectConnection!
+}
+
+type ProjectListFailure {
+  error: ProjectListError!
+}
+
+type ProjectListError {
+  message: String!
+}
+
+# Project Create
+input ProjectCreateInput {
+  teamId: String!
+  name: String!
+  description: String
+}
+
+union ProjectCreateOutput = ProjectCreateSuccess | ProjectCreateFailure
+
+type ProjectCreateSuccess {
+  project: Project!
+}
+
+type ProjectCreateFailure {
+  error: ProjectCreateError!
+}
+
+type ProjectCreateError {
+  message: String!
+}
+
+# Project Update
+input ProjectUpdateInput {
+  id: String!
+  name: String
+  description: String
+}
+
+union ProjectUpdateOutput = ProjectUpdateSuccess | ProjectUpdateFailure
+
+type ProjectUpdateSuccess {
+  project: Project!
+}
+
+type ProjectUpdateFailure {
+  error: ProjectUpdateError!
+}
+
+type ProjectUpdateError {
+  message: String!
+}
+
+# Project Delete
+input ProjectDeleteInput {
+  id: String!
+}
+
+union ProjectDeleteOutput = ProjectDeleteSuccess | ProjectDeleteFailure
+
+type ProjectDeleteSuccess {
+  project: Project!
+}
+
+type ProjectDeleteFailure {
+  error: ProjectDeleteError!
+}
+
+type ProjectDeleteError {
+  message: String!
+}
+
+# Project Type
+type Project implements Node {
+  id: String!
+  name: String!
+  description: String
+  team: Team!
+  isDeleted: Boolean!
+  createdAt: Date!
+  updatedAt: Date
+}
+
+type ProjectConnection implements Connection {
+  edges: [ProjectEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectEdge implements Edge {
+  cursor: String!
+  node: Project!
+}

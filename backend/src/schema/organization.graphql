@@ -1,9 +1,17 @@
 type OrganizationQuery {
   """ User queries """
   user: UserQuery!
+  """ Team queries """
+  team: TeamQuery!
+  """ Project queries """
+  project: ProjectQuery!
 }
 
 type OrganizationMutation {
   """ User mutations """
   user: UserMutation!
+  """ Team mutations """
+  team: TeamMutation!
+  """ Project mutations """
+  project: ProjectMutation!
 }
