@@ -4,13 +4,17 @@ scalar JSON
 
 
 type Query {
-    """ Organization queries """
+    """ Organization management queries """
     organization: OrganizationQuery!
+    """ Suryvey queries """
+    survey: SurveyQuery!
 }
 
 type Mutation {
-  """ Organization mutations """
+  """ Organization management mutation """
   organization: OrganizationMutation!
+  """ Survey management mutation """
+  survey: SurveyMutation!
 }
 
 input PaginationInput {

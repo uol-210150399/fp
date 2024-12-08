@@ -10,10 +10,12 @@ import { DynamoDBModule } from './dynamodb/dynamodb.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { OrganizationModule } from './organization/organization.module';
+import { SurveyModule } from './survey/survey.module';
 
 @Module({
   imports: [
     OrganizationModule,
+    SurveyModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       typePaths: ['./**/*.graphql'],

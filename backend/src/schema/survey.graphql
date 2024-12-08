@@ -1,0 +1,189 @@
+type SurveyQuery {
+  get(input: SurveyGetInput!): SurveyGetOutput!
+  list(input: SurveyListInput!): SurveyListOutput!
+}
+
+type SurveyMutation {
+  create(input: SurveyCreateInput!): SurveyCreateOutput!
+  update(input: SurveyUpdateInput!): SurveyUpdateOutput!
+  delete(input: SurveyDeleteInput!): SurveyDeleteOutput!
+  publish(input: SurveyPublishInput!): SurveyPublishOutput!
+}
+
+# Survey Get
+input SurveyGetInput {
+  id: String!
+}
+
+union SurveyGetOutput = SurveyGetSuccess | SurveyGetFailure
+
+type SurveyGetSuccess {
+  survey: Survey!
+}
+
+type SurveyGetFailure {
+  error: SurveyGetError!
+}
+
+type SurveyGetError {
+  message: String!
+}
+
+# Survey List
+input SurveyListInput {
+  pagination: PaginationInput!
+  filter: SurveyListFilterInput
+}
+
+input SurveyListFilterInput {
+  projectId: String!
+  status: SurveyStatus
+}
+
+union SurveyListOutput = SurveyListSuccess | SurveyListFailure
+
+type SurveyListSuccess {
+  surveys: SurveyConnection!
+}
+
+type SurveyListFailure {
+  error: SurveyListError!
+}
+
+type SurveyListError {
+  message: String!
+}
+
+# Survey Create
+input SurveyCreateInput {
+  projectId: String!
+  title: String!
+  description: String
+  questions: [SurveyQuestionInput!]!
+}
+
+input SurveyQuestionInput {
+  text: String!
+  type: QuestionType!
+  required: Boolean!
+  options: [String!]
+}
+
+union SurveyCreateOutput = SurveyCreateSuccess | SurveyCreateFailure
+
+type SurveyCreateSuccess {
+  survey: Survey!
+}
+
+type SurveyCreateFailure {
+  error: SurveyCreateError!
+}
+
+type SurveyCreateError {
+  message: String!
+}
+
+# Survey Update
+input SurveyUpdateInput {
+  id: String!
+  title: String
+  description: String
+  questions: [SurveyQuestionInput!]
+}
+
+union SurveyUpdateOutput = SurveyUpdateSuccess | SurveyUpdateFailure
+
+type SurveyUpdateSuccess {
+  survey: Survey!
+}
+
+type SurveyUpdateFailure {
+  error: SurveyUpdateError!
+}
+
+type SurveyUpdateError {
+  message: String!
+}
+
+# Survey Delete
+input SurveyDeleteInput {
+  id: String!
+}
+
+union SurveyDeleteOutput = SurveyDeleteSuccess | SurveyDeleteFailure
+
+type SurveyDeleteSuccess {
+  survey: Survey!
+}
+
+type SurveyDeleteFailure {
+  error: SurveyDeleteError!
+}
+
+type SurveyDeleteError {
+  message: String!
+}
+
+# Survey Publish
+input SurveyPublishInput {
+  id: String!
+}
+
+union SurveyPublishOutput = SurveyPublishSuccess | SurveyPublishFailure
+
+type SurveyPublishSuccess {
+  survey: Survey!
+}
+
+type SurveyPublishFailure {
+  error: SurveyPublishError!
+}
+
+type SurveyPublishError {
+  message: String!
+}
+
+# Survey Type
+type Survey implements Node {
+  id: String!
+  title: String!
+  description: String
+  project: Project!
+  questions: [SurveyQuestion!]!
+  status: SurveyStatus!
+  isDeleted: Boolean!
+  createdAt: Date!
+  updatedAt: Date
+  publishedAt: Date
+}
+
+type SurveyQuestion {
+  id: String!
+  text: String!
+  type: QuestionType!
+  required: Boolean!
+  options: [String!]
+}
+
+enum QuestionType {
+  TEXT
+  MULTIPLE_CHOICE
+  SINGLE_CHOICE
+  RATING
+  YES_NO
+}
+
+enum SurveyStatus {
+  DRAFT
+  PUBLISHED
+}
+
+type SurveyConnection implements Connection {
+  edges: [SurveyEdge!]!
+  pageInfo: PageInfo!
+}
+
+type SurveyEdge implements Edge {
+  cursor: String!
+  node: Survey!
+}

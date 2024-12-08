@@ -4,12 +4,6 @@ import {
   UserGetOutput,
   UserListInput,
   UserListOutput,
-  //   UserCreateInput,
-  //   UserCreateOutput,
-  //   UserUpdateInput,
-  //   UserUpdateOutput,
-  //   UserDeleteInput,
-  //   UserDeleteOutput
 } from '../generated/graphql';
 
 @Resolver('UserQuery')

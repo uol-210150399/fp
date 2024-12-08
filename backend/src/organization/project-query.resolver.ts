@@ -17,6 +17,7 @@ export class ProjectQueryResolver {
           id: input.id,
           name: 'Sample Project',
           description: 'A sample project',
+          surveys: [],
           team: {
             id: '1',
             name: 'Sample Team',
@@ -43,7 +44,9 @@ export class ProjectQueryResolver {
   }
 
   @ResolveField()
-  async list(@Args('input') input: ProjectListInput): Promise<ProjectListOutput> {
+  async list(
+    @Args('input') input: ProjectListInput,
+  ): Promise<ProjectListOutput> {
     try {
       return {
         __typename: 'ProjectListSuccess',
@@ -55,6 +58,7 @@ export class ProjectQueryResolver {
                 id: '1',
                 name: 'Sample Project',
                 description: 'A sample project',
+                surveys: [],
                 team: {
                   id: input.filter?.teamId || '1',
                   name: 'Sample Team',

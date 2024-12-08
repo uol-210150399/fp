@@ -21,6 +21,7 @@ export class ProjectMutationResolver {
           id: Date.now().toString(),
           name: input.name,
           description: input.description,
+          surveys: [],
           team: {
             id: input.teamId,
             name: 'Sample Team',
@@ -57,6 +58,7 @@ export class ProjectMutationResolver {
           id: input.id,
           name: input.name || 'Updated Project',
           description: input.description || 'Updated description',
+          surveys: [],
           team: {
             id: '1',
             name: 'Sample Team',
@@ -93,6 +95,7 @@ export class ProjectMutationResolver {
           id: input.id,
           name: 'Deleted Project',
           description: 'This project has been deleted',
+          surveys: [],
           team: {
             id: '1',
             name: 'Sample Team',

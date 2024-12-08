@@ -47,23 +47,45 @@ export class OrganizationResolver {
       __typename: 'OrganizationMutation',
       user: {
         __typename: 'UserMutation',
-        create: this.userMutationResolver.create.bind(this.userMutationResolver),
-        update: this.userMutationResolver.update.bind(this.userMutationResolver),
-        delete: this.userMutationResolver.delete.bind(this.userMutationResolver),
+        create: this.userMutationResolver.create.bind(
+          this.userMutationResolver,
+        ),
+        update: this.userMutationResolver.update.bind(
+          this.userMutationResolver,
+        ),
+        delete: this.userMutationResolver.delete.bind(
+          this.userMutationResolver,
+        ),
       },
       team: {
         __typename: 'TeamMutation',
-        create: this.teamMutationResolver.create.bind(this.teamMutationResolver),
-        update: this.teamMutationResolver.update.bind(this.teamMutationResolver),
-        delete: this.teamMutationResolver.delete.bind(this.teamMutationResolver),
-        addUser: this.teamMutationResolver.addUser.bind(this.teamMutationResolver),
-        removeUser: this.teamMutationResolver.removeUser.bind(this.teamMutationResolver),
+        create: this.teamMutationResolver.create.bind(
+          this.teamMutationResolver,
+        ),
+        update: this.teamMutationResolver.update.bind(
+          this.teamMutationResolver,
+        ),
+        delete: this.teamMutationResolver.delete.bind(
+          this.teamMutationResolver,
+        ),
+        addUser: this.teamMutationResolver.addUser.bind(
+          this.teamMutationResolver,
+        ),
+        removeUser: this.teamMutationResolver.removeUser.bind(
+          this.teamMutationResolver,
+        ),
       },
       project: {
         __typename: 'ProjectMutation',
-        create: this.projectMutationResolver.create.bind(this.projectMutationResolver),
-        update: this.projectMutationResolver.update.bind(this.projectMutationResolver),
-        delete: this.projectMutationResolver.delete.bind(this.projectMutationResolver),
+        create: this.projectMutationResolver.create.bind(
+          this.projectMutationResolver,
+        ),
+        update: this.projectMutationResolver.update.bind(
+          this.projectMutationResolver,
+        ),
+        delete: this.projectMutationResolver.delete.bind(
+          this.projectMutationResolver,
+        ),
       },
     };
   }

@@ -119,6 +119,7 @@ type Project implements Node {
   name: String!
   description: String
   team: Team!
+  surveys: [Survey!]!
   isDeleted: Boolean!
   createdAt: Date!
   updatedAt: Date
