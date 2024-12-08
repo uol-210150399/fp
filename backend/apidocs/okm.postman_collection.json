@@ -10,82 +10,196 @@
 			"name": "org",
 			"item": [
 				{
-					"name": "GetUser",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n  organization {\n    user {\n    get(input: {id: \"f9d7e63f-ecfc-4a0e-8192-a2a36312d205\"}) {\n    __typename  \n      ... on UserGetSuccess {\n      user {\n        id\n        name\n      }\n    }\n    ... on UserGetFailure {\n\n        \n    }\n    }\n  } \n}\n}",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "http://localhost:3177/graphql",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3177",
-							"path": [
-								"graphql"
-							]
+					"name": "team",
+					"item": [
+						{
+							"name": "GetTeam",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query {\n  organization {\n    team {\n    get(input: {id: \"f9d7e63f-ecfc-4a0e-8192-a2a36312d205\"}) {\n    __typename  \n      ... on TeamGetSuccess {\n      team {\n        id\n        name\n      }\n    }\n    ... on TeamGetFailure {\n        error {\n            message\n        }\n      }\n    }\n  } \n}\n}",
+										"variables": ""
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3177/graphql",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3177",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "Me",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n  organization {\n    user {\n    me {\n    __typename  \n      ... on UserGetSuccess {\n      user {\n        id\n        name\n      }\n    }\n      ... on UserGetFailure {\n        error {\n            message\n        }\n      }\n    }\n  } \n}\n}",
-								"variables": ""
-							}
+					"name": "user",
+					"item": [
+						{
+							"name": "GetUser",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query {\n  organization {\n    user {\n    get(input: {id: \"f9d7e63f-ecfc-4a0e-8192-a2a36312d205\"}) {\n    __typename  \n      ... on UserGetSuccess {\n      user {\n        id\n        name\n      }\n    }\n      ... on UserGetFailure {\n        error {\n            message\n        }\n      }\n    }\n  } \n}\n}",
+										"variables": ""
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3177/graphql",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3177",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "http://localhost:3177/graphql",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3177",
-							"path": [
-								"graphql"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "ListUser",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n  organization {\n    user {\n      list(\n        input: {\n          filter: {\n            teamId: \"f9d7e63f-ecfc-4a0e-8192-a2a36312d205\"\n          },\n          pagination: {\n            first: 10\n          }\n        }\n      ) {\n        __typename\n        ... on UserListSuccess {\n          users {\n            edges {\n              node {\n                id\n                name\n              }\n            }\n          }\n        }\n        ... on UserListFailure {\n          error {\n            message\n          }\n        }\n      }\n    }\n  }\n}",
-								"variables": ""
-							}
+						{
+							"name": "CreateUser",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation {\n  organization {\n    user {\n    create(input: {\n        name: \"joe\",\n        email: \"j\",\n        password: \"s\"\n        }) {\n    __typename  \n      ... on UserCreateSuccess {\n      user {\n        id\n        name\n      }\n    }\n      ... on UserCreateFailure {\n        error {\n            message\n        }\n      }\n    }\n  } \n}\n}",
+										"variables": ""
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3177/graphql",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3177",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "http://localhost:3177/graphql",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3177",
-							"path": [
-								"graphql"
-							]
+						{
+							"name": "UpdateUser",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation UpdateUser {\n  organization {\n    user {\n      update(input: {\n        id: \"123\"\n        name: \"John Doe Updated\"\n      }) {\n        __typename\n        ... on UserUpdateSuccess {\n          user {\n            id\n            name\n            email\n            isDeleted\n            createdAt\n            updatedAt\n          }\n        }\n        ... on UserUpdateFailure {\n          error {\n            message\n          }\n        }\n      }\n    }\n  }\n}",
+										"variables": ""
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3177/graphql",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3177",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DeleteUser",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation DeleteUser {\n  organization {\n    user {\n      delete(input: { id: \"123\" }) {\n        __typename\n        ... on UserDeleteSuccess {\n          user {\n            id\n            name\n            email\n            isDeleted\n            createdAt\n            updatedAt\n          }\n        }\n        ... on UserDeleteFailure {\n          error {\n            message\n          }\n        }\n      }\n    }\n  }\n}",
+										"variables": ""
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3177/graphql",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3177",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Me",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query {\n  organization {\n    user {\n    me {\n    __typename  \n      ... on UserGetSuccess {\n      user {\n        id\n        name\n      }\n    }\n      ... on UserGetFailure {\n        error {\n            message\n        }\n      }\n    }\n  } \n}\n}",
+										"variables": ""
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3177/graphql",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3177",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ListUser",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query {\n  organization {\n    user {\n      list(\n        input: {\n          filter: {\n            teamId: \"f9d7e63f-ecfc-4a0e-8192-a2a36312d205\"\n          },\n          pagination: {\n            first: 10\n          }\n        }\n      ) {\n        __typename\n        ... on UserListSuccess {\n          users {\n            edges {\n              node {\n                id\n                name\n              }\n            }\n          }\n        }\n        ... on UserListFailure {\n          error {\n            message\n          }\n        }\n      }\n    }\n  }\n}",
+										"variables": ""
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3177/graphql",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3177",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				}
 			]
 		},
