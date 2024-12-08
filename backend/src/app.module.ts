@@ -7,9 +7,17 @@ import configuration from './config/configuration';
 import { LoggerModule, Params } from 'nestjs-pino';
 import { v4 as uuidv4 } from 'uuid';
 import { DynamoDBModule } from './dynamodb/dynamodb.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { OrganizationModule } from './organization/organization.module';
 
 @Module({
   imports: [
+    OrganizationModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      typePaths: ['./**/*.graphql'],
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],

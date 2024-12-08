@@ -8,7 +8,14 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
+      providers: [
+        {
+          provide: AppService,
+          useValue: {
+            okMillie: () => 'Millie is ok',
+          },
+        },
+      ],
     }).compile();
 
     appController = app.get<AppController>(AppController);
@@ -16,6 +23,7 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Millie is ok"', () => {
+
       expect(appController.okMillie()).toBe('Millie is ok');
     });
   });

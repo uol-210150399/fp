@@ -1,0 +1,124 @@
+{
+	"info": {
+		"_postman_id": "201f4b2c-63b5-48a0-a92d-e0902a3c8728",
+		"name": "okm",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35132211"
+	},
+	"item": [
+		{
+			"name": "org",
+			"item": [
+				{
+					"name": "GetUser",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  organization {\n    user {\n    get(input: {id: \"f9d7e63f-ecfc-4a0e-8192-a2a36312d205\"}) {\n    __typename  \n      ... on UserGetSuccess {\n      user {\n        id\n        name\n      }\n    }\n    ... on UserGetFailure {\n\n        \n    }\n    }\n  } \n}\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3177/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3177",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Me",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  organization {\n    user {\n    me {\n    __typename  \n      ... on UserGetSuccess {\n      user {\n        id\n        name\n      }\n    }\n      ... on UserGetFailure {\n        error {\n            message\n        }\n      }\n    }\n  } \n}\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3177/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3177",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ListUser",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  organization {\n    user {\n      list(\n        input: {\n          filter: {\n            teamId: \"f9d7e63f-ecfc-4a0e-8192-a2a36312d205\"\n          },\n          pagination: {\n            first: 10\n          }\n        }\n      ) {\n        __typename\n        ... on UserListSuccess {\n          users {\n            edges {\n              node {\n                id\n                name\n              }\n            }\n          }\n        }\n        ... on UserListFailure {\n          error {\n            message\n          }\n        }\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3177/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3177",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3177/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3177",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

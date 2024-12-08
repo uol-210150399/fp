@@ -1,0 +1,9 @@
+type OrganizationQuery {
+  """ User queries """
+  user: UserQuery!
+}
+
+type OrganizationMutation {
+  """ User mutations """
+  user: UserMutation!
+}

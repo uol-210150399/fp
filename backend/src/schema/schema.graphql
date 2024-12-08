@@ -1,0 +1,42 @@
+scalar UUID
+scalar Date
+scalar JSON
+
+
+type Query {
+    """ Organization queries """
+    organization: OrganizationQuery!
+}
+
+# type Mutation {
+#   """ Organization mutations """
+#   organization: OrganizationMutation!
+# }
+
+input PaginationInput {
+  first: Int!
+  after: String
+}
+
+interface Edge {
+  cursor: String!
+  node: Node!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  endCursor: String
+}
+
+interface Error {
+    message: String!
+}
+
+interface Connection {
+  edges: [Edge!]!
+  pageInfo: PageInfo!
+}
+
+interface Node {
+  id: String!
+}
