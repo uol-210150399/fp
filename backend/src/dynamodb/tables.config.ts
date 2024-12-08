@@ -13,12 +13,14 @@ export const createTables = async () => {
     {
       TableName: 'okmillie',
       KeySchema: [
-        { AttributeName: 'id', KeyType: 'HASH' as KeyType }, // Partition key
+        { AttributeName: 'PK', KeyType: 'HASH' as KeyType },
+        { AttributeName: 'SK', KeyType: 'RANGE' as KeyType },
       ],
       AttributeDefinitions: [
-        { AttributeName: 'id', AttributeType: 'S' as ScalarAttributeType }, // String type
+        { AttributeName: 'PK', AttributeType: 'S' as ScalarAttributeType },
+        { AttributeName: 'SK', AttributeType: 'S' as ScalarAttributeType },
       ],
-      BillingMode: 'PAY_PER_REQUEST' as BillingMode
+      BillingMode: 'PAY_PER_REQUEST' as BillingMode,
     },
   ];
 

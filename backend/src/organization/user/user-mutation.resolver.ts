@@ -6,20 +6,27 @@ import {
   UserUpdateOutput,
   UserDeleteInput,
   UserDeleteOutput,
-} from '../generated/graphql';
+} from '../../generated/graphql';
+import { UserService } from './user.service';
 
 @Resolver('UserMutation')
 export class UserMutationResolver {
+  constructor(private readonly userService: UserService) {}
 
-    @ResolveField()
+  @ResolveField()
   async create(
     @Args('input') input: UserCreateInput,
   ): Promise<UserCreateOutput> {
     try {
+      const userId = await this.userService.create(
+        input.email,
+        input.name,
+        input.password,
+      );
       return {
         __typename: 'UserCreateSuccess',
         user: {
-          id: Date.now().toString(),
+          id: userId,
           name: input.name,
           email: input.email,
           isDeleted: false,
@@ -37,7 +44,7 @@ export class UserMutationResolver {
     }
   }
 
-    @ResolveField()
+  @ResolveField()
   async update(
     @Args('input') input: UserUpdateInput,
   ): Promise<UserUpdateOutput> {
@@ -64,7 +71,7 @@ export class UserMutationResolver {
     }
   }
 
-    @ResolveField()
+  @ResolveField()
   async delete(
     @Args('input') input: UserDeleteInput,
   ): Promise<UserDeleteOutput> {

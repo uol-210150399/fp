@@ -4,20 +4,31 @@ import {
   UserGetOutput,
   UserListInput,
   UserListOutput,
-} from '../generated/graphql';
+} from '../../generated/graphql';
+import { UserService } from './user.service';
 
 @Resolver('UserQuery')
 export class UserQueryResolver {
+  constructor(private readonly userService: UserService) {}
 
   @ResolveField()
   async get(@Args('input') input: UserGetInput): Promise<UserGetOutput> {
+    const user = await this.userService.get(input.id);
+    if (!user) {
+      return {
+        __typename: 'UserGetFailure',
+        error: {
+          message: 'User not found',
+        },
+      };
+    }
     return {
       __typename: 'UserGetSuccess',
       user: {
-        id: input.id,
-        name: 'John Doe',
-        email: 'john@example.com',
-        isDeleted: false,
+        id: user.PK,
+        name: user.name,
+        email: user.email,
+        isDeleted: user.isDeleted,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },

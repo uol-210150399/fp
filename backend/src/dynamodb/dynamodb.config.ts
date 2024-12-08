@@ -4,7 +4,7 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 export const getDynamoDBClient = () => {
   const client = new DynamoDBClient({
     region: process.env.AWS_REGION || 'us-east-1',
-    ...(process.env.NODE_ENV === 'development' && {
+    ...(process.env.NODE_ENV === 'local' && {
       endpoint: process.env.DYNAMO_ENDPOINT || 'http://localhost:4002',
       credentials: {
         accessKeyId: 'local',

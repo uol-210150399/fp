@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
+  DeleteCommand,
   DynamoDBDocumentClient,
   GetCommand,
   PutCommand,
+  QueryCommand,
+  UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { ConfigService } from '@nestjs/config';
 
@@ -37,10 +40,53 @@ export class DynamoDBService {
   }
 
   async getItem(tableName: string, key: Record<string, any>) {
-    return this.docClient.send(
+    console.log(key);
+    const result = await this.docClient.send(
       new GetCommand({
         TableName: tableName,
         Key: key,
+      }),
+    );
+    return result.Item;
+  }
+
+  async updateItem(tableName: string, item: Record<string, any>) {
+    const result = await this.docClient.send(
+      new UpdateCommand({
+        TableName: tableName,
+        Key: { id: item.id },
+        UpdateExpression: 'set #name = :name',
+        ExpressionAttributeNames: {
+          '#name': 'name',
+        },
+        ExpressionAttributeValues: {
+          ':name': item.name,
+        },
+      }),
+    );
+    return result;
+  }
+
+  async deleteItem(tableName: string, key: Record<string, any>) {
+    return this.docClient.send(
+      new DeleteCommand({
+        TableName: tableName,
+        Key: key,
+      }),
+    );
+  }
+
+  async queryItems(tableName: string, key: Record<string, any>) {
+    return this.docClient.send(
+      new QueryCommand({
+        TableName: tableName,
+        KeyConditionExpression: '#id = :id',
+        ExpressionAttributeNames: {
+          '#id': 'id',
+        },
+        ExpressionAttributeValues: {
+          ':id': key.id,
+        },
       }),
     );
   }

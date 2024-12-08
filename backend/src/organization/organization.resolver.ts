@@ -1,7 +1,7 @@
 import { Resolver, Query, Mutation } from '@nestjs/graphql';
 import { OrganizationMutation, OrganizationQuery } from '../generated/graphql';
-import { UserQueryResolver } from './user-query.resolver';
-import { UserMutationResolver } from './user-mutation.resolver';
+import { UserQueryResolver } from './user/user-query.resolver';
+import { UserMutationResolver } from './user/user-mutation.resolver';
 import { TeamQueryResolver } from './team-query.resolver';
 import { TeamMutationResolver } from './team-mutation.resolver';
 import { ProjectQueryResolver } from './project-query.resolver';
