@@ -8,10 +8,10 @@ type Query {
     organization: OrganizationQuery!
 }
 
-# type Mutation {
-#   """ Organization mutations """
-#   organization: OrganizationMutation!
-# }
+type Mutation {
+  """ Organization mutations """
+  organization: OrganizationMutation!
+}
 
 input PaginationInput {
   first: Int!

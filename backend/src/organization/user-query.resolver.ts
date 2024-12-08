@@ -1,4 +1,4 @@
-import { Resolver, Args, Query, ResolveField } from '@nestjs/graphql';
+import { Resolver, Args, ResolveField } from '@nestjs/graphql';
 import {
   UserGetInput,
   UserGetOutput,
@@ -13,7 +13,7 @@ import {
 } from '../generated/graphql';
 
 @Resolver('UserQuery')
-export class UserResolver {
+export class UserQueryResolver {
 
   @ResolveField()
   async get(@Args('input') input: UserGetInput): Promise<UserGetOutput> {
@@ -60,7 +60,6 @@ export class UserResolver {
 
   @ResolveField()
   async me(): Promise<UserGetOutput> {
-    console.log('me');
     return {
       __typename: 'UserGetSuccess',
       user: {
