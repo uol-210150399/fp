@@ -117,3 +117,19 @@ aws dynamodb list-tables \
 ```
 
 You can view the DynamoDB GUI at `http://localhost:8001`
+
+
+### Table
+
+#### Run Migrations
+`pnpm run migration:run `
+
+#### Create Migration
+`pnpm run migration:create migrations/add-user-table`
+
+#### Run Migration
+`pnpm run migration:run migrations/add-user-table`
+
+pnpm run migration:revert migrations/add-user-table
+
+pnpm run migration:generate migrations/add-user-table

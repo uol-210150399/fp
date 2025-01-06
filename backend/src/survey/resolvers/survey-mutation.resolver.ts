@@ -8,54 +8,37 @@ import {
   SurveyDeleteOutput,
   SurveyPublishInput,
   SurveyPublishOutput,
-  QuestionType,
-  SurveyStatus,
 } from '../../generated/graphql';
+import {
+  CreateSurveyDto,
+  DeleteSurveyDto,
+  SurveyService,
+  UpdateSurveyDto,
+} from '../survey.service';
 
 @Resolver('SurveyMutation')
 export class SurveyMutationResolver {
+  constructor(private surveyService: SurveyService) {}
+
   @ResolveField()
   async create(
     @Args('input') input: SurveyCreateInput,
   ): Promise<SurveyCreateOutput> {
     try {
+      const entity: CreateSurveyDto = {
+        title: input.title,
+        projectId: input.projectId,
+        userId: '00000000-0000-0000-0000-000000000000',
+      };
+      const survey = await this.surveyService.create(entity);
       return {
         __typename: 'SurveyCreateSuccess',
         survey: {
-          id: Date.now().toString(),
-          title: input.title,
-          description: input.description,
-          status: SurveyStatus.DRAFT,
-          questions: input.questions.map((q, index) => ({
-            id: (index + 1).toString(),
-            text: q.text,
-            type: q.type,
-            required: q.required,
-            options: q.options,
-          })),
-          project: {
-            id: input.projectId,
-            name: 'Sample Project',
-            description: 'A sample project',
-            team: {
-              id: '1',
-              name: 'Sample Team',
-              description: 'A sample team',
-              users: [],
-              projects: [],
-              isDeleted: false,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            surveys: [],
-            isDeleted: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          isDeleted: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          publishedAt: null,
+          id: survey.surveyId,
+          title: survey.title,
+          isDeleted: survey.isDeletedFlag,
+          createdAt: survey.createdAt,
+          updatedAt: survey.updatedAt,
         },
       };
     } catch (error) {
@@ -73,44 +56,20 @@ export class SurveyMutationResolver {
     @Args('input') input: SurveyUpdateInput,
   ): Promise<SurveyUpdateOutput> {
     try {
+      const entity: UpdateSurveyDto = {
+        surveyId: input.id,
+        title: input.title,
+        userId: '00000000-0000-0000-0000-000000000000',
+      };
+      const survey = await this.surveyService.update(entity);
       return {
         __typename: 'SurveyUpdateSuccess',
         survey: {
-          id: input.id,
-          title: input.title || 'Updated Survey',
-          description: input.description || 'Updated description',
-          status: SurveyStatus.DRAFT,
-          questions:
-            input.questions?.map((q, index) => ({
-              id: (index + 1).toString(),
-              text: q.text,
-              type: q.type,
-              required: q.required,
-              options: q.options,
-            })) || [],
-          project: {
-            id: '1',
-            name: 'Sample Project',
-            description: 'A sample project',
-            team: {
-              id: '1',
-              name: 'Sample Team',
-              description: 'A sample team',
-              users: [],
-              projects: [],
-              isDeleted: false,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            surveys: [],
-            isDeleted: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          isDeleted: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          publishedAt: null,
+          id: survey.surveyId,
+          title: survey.title,
+          isDeleted: survey.isDeletedFlag,
+          createdAt: survey.createdAt,
+          updatedAt: survey.updatedAt,
         },
       };
     } catch (error) {
@@ -128,37 +87,19 @@ export class SurveyMutationResolver {
     @Args('input') input: SurveyDeleteInput,
   ): Promise<SurveyDeleteOutput> {
     try {
+      const entity: DeleteSurveyDto = {
+        surveyId: input.id,
+        userId: '00000000-0000-0000-0000-000000000000',
+      };
+      const survey = await this.surveyService.delete(entity);
       return {
         __typename: 'SurveyDeleteSuccess',
         survey: {
-          id: input.id,
-          title: 'Deleted Survey',
-          description: 'This survey has been deleted',
-          status: SurveyStatus.DRAFT,
-          questions: [],
-          project: {
-            id: '1',
-            name: 'Sample Project',
-            description: 'A sample project',
-            team: {
-              id: '1',
-              name: 'Sample Team',
-              description: 'A sample team',
-              users: [],
-              projects: [],
-              isDeleted: false,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            surveys: [],
-            isDeleted: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          isDeleted: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          publishedAt: null,
+          id: survey.surveyId,
+          title: survey.title,
+          isDeleted: survey.isDeletedFlag,
+          createdAt: survey.createdAt,
+          updatedAt: survey.updatedAt,
         },
       };
     } catch (error) {
@@ -176,46 +117,15 @@ export class SurveyMutationResolver {
     @Args('input') input: SurveyPublishInput,
   ): Promise<SurveyPublishOutput> {
     try {
-      const publishedAt = new Date().toISOString();
+      // TODO: Implement publish logic
       return {
         __typename: 'SurveyPublishSuccess',
         survey: {
           id: input.id,
           title: 'Published Survey',
-          description: 'This survey has been published',
-          status: SurveyStatus.PUBLISHED,
-          questions: [
-            {
-              id: '1',
-              text: 'Sample Question',
-              type: QuestionType.TEXT,
-              required: true,
-              options: null,
-            },
-          ],
-          project: {
-            id: '1',
-            name: 'Sample Project',
-            description: 'A sample project',
-            team: {
-              id: '1',
-              name: 'Sample Team',
-              description: 'A sample team',
-              users: [],
-              projects: [],
-              isDeleted: false,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            surveys: [],
-            isDeleted: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
           isDeleted: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          publishedAt,
         },
       };
     } catch (error) {

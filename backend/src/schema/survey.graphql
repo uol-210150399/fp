@@ -32,12 +32,11 @@ type SurveyGetError {
 # Survey List
 input SurveyListInput {
   pagination: PaginationInput!
-  filter: SurveyListFilterInput
+  filter: SurveyListFilterInput!
 }
 
 input SurveyListFilterInput {
   projectId: String!
-  status: SurveyStatus
 }
 
 union SurveyListOutput = SurveyListSuccess | SurveyListFailure
@@ -58,8 +57,6 @@ type SurveyListError {
 input SurveyCreateInput {
   projectId: String!
   title: String!
-  description: String
-  questions: [SurveyQuestionInput!]!
 }
 
 input SurveyQuestionInput {
@@ -87,8 +84,6 @@ type SurveyCreateError {
 input SurveyUpdateInput {
   id: String!
   title: String
-  description: String
-  questions: [SurveyQuestionInput!]
 }
 
 union SurveyUpdateOutput = SurveyUpdateSuccess | SurveyUpdateFailure
@@ -147,14 +142,9 @@ type SurveyPublishError {
 type Survey implements Node {
   id: String!
   title: String!
-  description: String
-  project: Project!
-  questions: [SurveyQuestion!]!
-  status: SurveyStatus!
   isDeleted: Boolean!
   createdAt: Date!
   updatedAt: Date
-  publishedAt: Date
 }
 
 type SurveyQuestion {
