@@ -13,7 +13,6 @@ export class SurveyResolver {
 
   @Query('survey')
   async survey(): Promise<SurveyQuery> {
-    console.log('survey');
     return {
       __typename: 'SurveyQuery',
       get: this.surveyQueryResolver.get.bind(this.surveyQueryResolver),
@@ -38,6 +37,5 @@ export class SurveyResolver {
         this.surveyMutationResolver,
       ),
     };
-
   }
 }

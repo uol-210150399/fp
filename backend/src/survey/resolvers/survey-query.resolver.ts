@@ -4,61 +4,25 @@ import {
   SurveyGetOutput,
   SurveyListInput,
   SurveyListOutput,
-  QuestionType,
-  SurveyStatus,
 } from '../../generated/graphql';
+import { SurveyService } from '../survey.service';
 
 @Resolver('SurveyQuery')
 export class SurveyQueryResolver {
+  constructor(private surveyService: SurveyService) {}
+
   @ResolveField()
   async get(@Args('input') input: SurveyGetInput): Promise<SurveyGetOutput> {
     try {
+      const survey = await this.surveyService.get(input.id);
       return {
         __typename: 'SurveyGetSuccess',
         survey: {
-          id: input.id,
-          title: 'Sample Survey',
-          description: 'A sample survey description',
-          status: SurveyStatus.DRAFT,
-          questions: [
-            {
-              id: '1',
-              text: 'What is your age?',
-              type: QuestionType.TEXT,
-              required: true,
-              options: null,
-            },
-            {
-              id: '2',
-              text: 'How satisfied are you with our service?',
-              type: QuestionType.RATING,
-              required: true,
-              options: ['1', '2', '3', '4', '5'],
-            },
-          ],
-          project: {
-            id: '1',
-            name: 'Sample Project',
-            description: 'A sample project',
-            team: {
-              id: '1',
-              name: 'Sample Team',
-              description: 'A sample team',
-              users: [],
-              projects: [],
-              isDeleted: false,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            surveys: [],
-            isDeleted: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          isDeleted: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          publishedAt: null,
+          id: survey.surveyId,
+          title: survey.title,
+          isDeleted: survey.isDeletedFlag,
+          createdAt: survey.createdAt,
+          updatedAt: survey.updatedAt,
         },
       };
     } catch (error) {
@@ -74,54 +38,34 @@ export class SurveyQueryResolver {
   @ResolveField()
   async list(@Args('input') input: SurveyListInput): Promise<SurveyListOutput> {
     try {
+      const surveys = await this.surveyService.list(input.filter.projectId);
+      if (surveys.length === 0) {
+        return {
+          __typename: 'SurveyListSuccess',
+          surveys: {
+            edges: [],
+            pageInfo: {
+              hasNextPage: false,
+            },
+          },
+        };
+      }
+
       return {
         __typename: 'SurveyListSuccess',
         surveys: {
-          edges: [
-            {
-              cursor: '1',
-              node: {
-                id: '1',
-                title: 'Sample Survey',
-                description: 'A sample survey description',
-                status: input.filter?.status || SurveyStatus.DRAFT,
-                questions: [
-                  {
-                    id: '1',
-                    text: 'What is your age?',
-                    type: QuestionType.TEXT,
-                    required: true,
-                    options: null,
-                  },
-                ],
-                project: {
-                  id: input.filter?.projectId || '1',
-                  name: 'Sample Project',
-                  description: 'A sample project',
-                  team: {
-                    id: '1',
-                    name: 'Sample Team',
-                    description: 'A sample team',
-                    users: [],
-                    projects: [],
-                    isDeleted: false,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                  },
-                  surveys: [],
-                  isDeleted: false,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                },
-                isDeleted: false,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                publishedAt: null,
-              },
+          edges: surveys.map((survey) => ({
+            cursor: survey.surveyId,
+            node: {
+              id: survey.surveyId,
+              title: survey.title,
+              isDeleted: survey.isDeletedFlag,
+              createdAt: survey.createdAt,
+              updatedAt: survey.updatedAt,
             },
-          ],
+          })),
           pageInfo: {
-            endCursor: '1',
+            endCursor: surveys[surveys.length - 1].surveyId,
             hasNextPage: false,
           },
         },

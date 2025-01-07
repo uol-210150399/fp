@@ -204,6 +204,115 @@
 			]
 		},
 		{
+			"name": "survey",
+			"item": [
+				{
+					"name": "GetSurvey",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  survey {\n    get(input: {id: \"f9d7e63f-ecfc-4a0e-8192-a2a36312d205\"}) {\n    __typename  \n      ... on SurveyGetSuccess {\n      survey {\n        id\n        name\n      }\n    }\n      ... on SurveyGetFailure {\n        error {\n            message\n        }\n      }\n    }\n  } \n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3177/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3177",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ListSurvey",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  survey {\n    list(input: {\n        pagination: {\n            first: 10,\n            after: \"00000000-0000-0000-0000-000000000001\"\n        },\n        filter: {\n            projectId: \"00000000-0000-0000-0000-000000000001\"\n        }\n\n\n    }) {\n    __typename  \n      ... on SurveyListSuccess {\n      surveys {\n            edges {\n            cursor,\n            node {\n                id,\n                title\n            }\n          }\n      }\n    }\n      ... on SurveyListFailure {\n        error {\n            message\n        }\n      }\n    }\n  } \n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3177/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3177",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateSurvey",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  survey {\n    get(input: {id: \"f9d7e63f-ecfc-4a0e-8192-a2a36312d205\"}) {\n    __typename  \n      ... on SurveyGetSuccess {\n      survey {\n        id\n        name\n      }\n    }\n      ... on SurveyGetFailure {\n        error {\n            message\n        }\n      }\n    }\n  } \n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3177/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3177",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateSurvey",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation {\n  survey {\n    update(input: {\n        id: \"83181c32-bf19-4793-8c76-540a77afa7fe\",\n        title: \"Testing survey 1\"\n        }) {\n    __typename  \n      ... on SurveyUpdateSuccess {\n      survey {\n        id\n        title\n      }\n    }\n      ... on SurveyUpdateFailure {\n        error {\n            message\n        }\n      }\n    }\n  } \n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3177/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3177",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Health",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
