@@ -10,14 +10,14 @@ interface TextQuestionProps {
   onSubmit?: (value: string) => void;
 }
 
-export const TextQuestion: React.FC<TextQuestionProps> = ({
+export const TextQuestion = ({
   title,
   description,
   required,
   maxLength,
   placeholder = "Type your answer here...",
   onSubmit,
-}) => {
+}: TextQuestionProps) => {
   const [value, setValue] = useState("");
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
