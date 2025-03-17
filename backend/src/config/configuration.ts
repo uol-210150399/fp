@@ -6,4 +6,5 @@ export default () => ({
   dbUser: process.env.DB_USER,
   dbPassword: process.env.DB_PASSWORD,
   nodeEnv: process.env.NODE_ENV,
+  clerkSecretKey: process.env.CLERK_SECRET_KEY,
 });

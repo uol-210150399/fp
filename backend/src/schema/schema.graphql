@@ -2,24 +2,59 @@ scalar UUID
 scalar Date
 scalar JSON
 
-
 type Query {
-    """ Organization management queries """
-    organization: OrganizationQuery!
-    """ Suryvey queries """
-    survey: SurveyQuery!
+  """
+  Team Operations
+  """
+  team(id: ID!): TeamResponse!
+  teams(pagination: PaginationInput): TeamsResponse!
+
+  """
+  Project Operations
+  """
+  project(id: ID!): ProjectResponse!
+  projects(
+    pagination: PaginationInput
+    filter: ProjectsFilterInput
+  ): ProjectsResponse!
 }
 
 type Mutation {
-  """ Organization management mutation """
-  organization: OrganizationMutation!
-  """ Survey management mutation """
-  survey: SurveyMutation!
+  """
+  Team Operations
+  """
+  createTeam(input: TeamCreateInput!): TeamResponse!
+  updateTeam(input: TeamUpdateInput!): TeamResponse!
+  deleteTeam(input: TeamDeleteInput!): TeamResponse!
+
+  """
+  Team Member Operations
+  """
+  createTeamMember(input: TeamMemberCreateInput!): TeamMemberResponse!
+  updateTeamMember(input: TeamMemberUpdateInput!): TeamMemberResponse!
+  deleteTeamMember(input: TeamMemberDeleteInput!): TeamMemberResponse!
+
+  """
+  Project Operations
+  """
+  createProject(input: ProjectCreateInput!): ProjectResponse!
+  updateProject(input: ProjectUpdateInput!): ProjectResponse!
+  deleteProject(input: ProjectDeleteInput!): ProjectResponse!
 }
 
+"""
+Common input types
+"""
 input PaginationInput {
   first: Int!
   after: String
+}
+
+"""
+Common interfaces
+"""
+interface Node {
+  id: ID!
 }
 
 interface Edge {
@@ -27,20 +62,28 @@ interface Edge {
   node: Node!
 }
 
-type PageInfo {
-  hasNextPage: Boolean!
-  endCursor: String
-}
-
-interface Error {
-    message: String!
-}
-
 interface Connection {
   edges: [Edge!]!
   pageInfo: PageInfo!
 }
 
-interface Node {
-  id: String!
+type PageInfo {
+  hasNextPage: Boolean!
+  endCursor: String
+}
+
+"""
+Common error handling
+"""
+interface Error {
+  message: String!
+  code: ErrorCode!
+}
+
+enum ErrorCode {
+  NOT_FOUND
+  UNAUTHORIZED
+  FORBIDDEN
+  VALIDATION_ERROR
+  INTERNAL_ERROR
 }

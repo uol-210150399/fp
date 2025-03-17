@@ -2,12 +2,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '../../user/model/user.entity';
 import { AuditableEntity } from 'src/common/model/auditable.entity';
 
 @Entity('transition_rule')
@@ -32,12 +29,4 @@ export class TransitionRuleEntity extends AuditableEntity {
 
   @Column({ name: 'updated_by' })
   updatedBy: string;
-
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'created_by', referencedColumnName: 'userId' })
-  createdByUser: UserEntity;
-
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'updated_by', referencedColumnName: 'userId' })
-  updatedByUser: UserEntity;
 }

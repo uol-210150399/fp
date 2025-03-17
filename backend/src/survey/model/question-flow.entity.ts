@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '../../user/model/user.entity';
 import { QuestionEntity } from './question.entity';
 import { TransitionRuleEntity } from './transition-rule.entity';
 import { AuditableEntity } from 'src/common/model/auditable.entity';
@@ -55,12 +54,4 @@ export class QuestionFlowEntity extends AuditableEntity {
     referencedColumnName: 'transitionRuleId',
   })
   transitionRule: TransitionRuleEntity;
-
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'created_by', referencedColumnName: 'userId' })
-  createdByUser: UserEntity;
-
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'updated_by', referencedColumnName: 'userId' })
-  updatedByUser: UserEntity;
 }

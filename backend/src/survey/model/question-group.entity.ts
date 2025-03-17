@@ -8,7 +8,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '../../user/model/user.entity';
 import { SurveyEntity } from './survey.entity';
 import { AuditableEntity } from 'src/common/model/auditable.entity';
 import { QuestionEntity } from './question.entity';
@@ -42,14 +41,6 @@ export class QuestionGroupEntity extends AuditableEntity {
   @ManyToOne(() => SurveyEntity, (survey) => survey.questionGroups)
   @JoinColumn({ name: 'survey_id', referencedColumnName: 'surveyId' })
   survey: SurveyEntity;
-
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'created_by', referencedColumnName: 'userId' })
-  createdByUser: UserEntity;
-
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'updated_by', referencedColumnName: 'userId' })
-  updatedByUser: UserEntity;
 
   @OneToMany(() => QuestionEntity, (question) => question.questionGroup)
   questions: QuestionEntity[];

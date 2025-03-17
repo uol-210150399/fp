@@ -7,6 +7,7 @@ import {
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 import "./tailwind.css";
+import { ClerkApp, ClerkProvider } from "@clerk/remix";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://rsms.me/" },
@@ -34,9 +35,21 @@ export function Layout() {
   );
 }
 
-export default function App() {
-  return <Outlet />;
+function App() {
+  return (
+    <ClerkProvider {...{
+      publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+    }}>
+      <div>
+        <Outlet />
+      </div>
+    </ClerkProvider>
+  );
 }
+
+export default ClerkApp(App, {
+  publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+});
 
 export function HydrateFallback() {
   return <p>Loading...</p>;

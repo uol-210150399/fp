@@ -1,6 +1,7 @@
 import { ApplicationLayout } from "@/components/core/application-layout"
 import { type LoaderFunctionArgs } from "@remix-run/node"
 import { Outlet } from "@remix-run/react"
+import { SignedIn } from "@clerk/remix"
 
 export function clientLoader({ params }: LoaderFunctionArgs) {
   const { project } = params
@@ -11,8 +12,10 @@ export function clientLoader({ params }: LoaderFunctionArgs) {
 
 export default function ProjectLayout() {
   return (
-    <ApplicationLayout>
-      <Outlet />
-    </ApplicationLayout>
+    <SignedIn>
+      <ApplicationLayout>
+        <Outlet />
+      </ApplicationLayout>
+    </SignedIn>
   )
 }

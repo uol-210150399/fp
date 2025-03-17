@@ -1,125 +1,44 @@
-type ProjectQuery {
-  get(input: ProjectGetInput!): ProjectGetOutput!
-  list(input: ProjectListInput!): ProjectListOutput!
-}
-
-type ProjectMutation {
-  create(input: ProjectCreateInput!): ProjectCreateOutput!
-  update(input: ProjectUpdateInput!): ProjectUpdateOutput!
-  delete(input: ProjectDeleteInput!): ProjectDeleteOutput!
-}
-
-# Project Get
-input ProjectGetInput {
-  id: String!
-}
-
-union ProjectGetOutput = ProjectGetSuccess | ProjectGetFailure
-
-type ProjectGetSuccess {
-  project: Project!
-}
-
-type ProjectGetFailure {
-  error: ProjectGetError!
-}
-
-type ProjectGetError {
-  message: String!
-}
-
-# Project List
-input ProjectListInput {
-  pagination: PaginationInput!
-  filter: ProjectListFilterInput
-}
-
-input ProjectListFilterInput {
+"""
+Project Inputs
+"""
+input ProjectsFilterInput {
   teamId: String!
 }
 
-union ProjectListOutput = ProjectListSuccess | ProjectListFailure
-
-type ProjectListSuccess {
-  projects: ProjectConnection!
-}
-
-type ProjectListFailure {
-  error: ProjectListError!
-}
-
-type ProjectListError {
-  message: String!
-}
-
-# Project Create
 input ProjectCreateInput {
   teamId: String!
   name: String!
-  description: String
 }
 
-union ProjectCreateOutput = ProjectCreateSuccess | ProjectCreateFailure
-
-type ProjectCreateSuccess {
-  project: Project!
-}
-
-type ProjectCreateFailure {
-  error: ProjectCreateError!
-}
-
-type ProjectCreateError {
-  message: String!
-}
-
-# Project Update
 input ProjectUpdateInput {
-  id: String!
+  id: ID!
   name: String
-  description: String
 }
 
-union ProjectUpdateOutput = ProjectUpdateSuccess | ProjectUpdateFailure
-
-type ProjectUpdateSuccess {
-  project: Project!
-}
-
-type ProjectUpdateFailure {
-  error: ProjectUpdateError!
-}
-
-type ProjectUpdateError {
-  message: String!
-}
-
-# Project Delete
 input ProjectDeleteInput {
-  id: String!
+  id: ID!
 }
 
-union ProjectDeleteOutput = ProjectDeleteSuccess | ProjectDeleteFailure
-
-type ProjectDeleteSuccess {
-  project: Project!
+"""
+Project Operation Outputs
+"""
+type ProjectResponse {
+  data: Project
+  error: Error
 }
 
-type ProjectDeleteFailure {
-  error: ProjectDeleteError!
+type ProjectsResponse {
+  data: ProjectConnection!
+  error: Error
 }
 
-type ProjectDeleteError {
-  message: String!
-}
-
-# Project Type
+"""
+Project Types
+"""
 type Project implements Node {
-  id: String!
+  id: ID!
   name: String!
-  description: String
-  team: Team!
-  surveys: [Survey!]!
+  teamId: ID!
   isDeleted: Boolean!
   createdAt: Date!
   updatedAt: Date

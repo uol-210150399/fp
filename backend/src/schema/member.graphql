@@ -1,0 +1,63 @@
+"""
+Team Member Inputs
+"""
+input TeamMembersFilterInput {
+  teamId: ID!
+}
+
+input TeamMemberCreateInput {
+  teamId: ID!
+  userId: ID!
+  role: TeamMemberRole!
+}
+
+input TeamMemberUpdateInput {
+  id: ID!
+  role: TeamMemberRole
+}
+
+input TeamMemberDeleteInput {
+  id: ID!
+}
+
+"""
+Team Member Operation Outputs
+"""
+type TeamMemberResponse {
+  data: TeamMember
+  error: Error
+}
+
+type TeamMembersResponse {
+  data: TeamMemberConnection!
+  error: Error
+}
+
+"""
+Team Member Types
+"""
+type TeamMember implements Node {
+  id: ID!
+  userId: String!
+  teamId: ID!
+  role: TeamMemberRole!
+  isDeleted: Boolean!
+  createdAt: Date!
+  updatedAt: Date
+}
+
+enum TeamMemberRole {
+  ADMIN
+  MEMBER
+  OWNER
+}
+
+type TeamMemberConnection implements Connection {
+  edges: [TeamMemberEdge!]!
+  pageInfo: PageInfo!
+}
+
+type TeamMemberEdge implements Edge {
+  cursor: String!
+  node: TeamMember!
+}

@@ -5,6 +5,7 @@
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Installation
+
 ```bash
 $ pnpm install
 ```
@@ -17,9 +18,7 @@ See .env.example for a list of ENVVARS. You can set these either by adding a _.e
 
 ### Install the dependencies
 
-
 1. Install [NodeJS 20+ LTS](https://nodejs.org/) (I recommend [installing it](https://github.com/asdf-vm/asdf-nodejs) with [asdf](https://github.com/asdf-vm/asdf) if your on mac or linux)
-
 
 ```Shell
 # Make sure you are using the correct version of Node before installing pnpm
@@ -45,10 +44,10 @@ $ cp .env.example .env
 ```
 
 ### Set up the database
+
 ```bash
 $ docker-compose -f docker-compose.dev.yml up
 ```
-
 
 ### Start the app
 
@@ -93,8 +92,8 @@ $ pnpm run check
 $ pnpm run delint
 ```
 
-
 ## Docker
+
 ```
 # Build the Docker image
 docker build -t backend .
@@ -103,31 +102,26 @@ docker build -t backend .
 docker run -p 3005:3005 backend
 ```
 
+## Postgres
 
-## DynamoDB
 ```
 $ docker-compose up
 ```
 
-You can verify that the DynamoDB container is running by running the following command:
-```
-aws dynamodb list-tables \
---endpoint-url http://localhost:4002 \
---debug
-```
-
-You can view the DynamoDB GUI at `http://localhost:8001`
-
+You can view the Postgres GUI at `http://localhost:5436`
 
 ### Table
 
 #### Run Migrations
+
 `pnpm run migration:run `
 
 #### Create Migration
+
 `pnpm run migration:create migrations/add-user-table`
 
 #### Run Migration
+
 `pnpm run migration:run migrations/add-user-table`
 
 pnpm run migration:revert migrations/add-user-table

@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 export abstract class BaseEntity {
@@ -7,6 +8,6 @@ export abstract class BaseEntity {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
 
-  @Column({ name: 'is_deleted_flag', default: false })
-  isDeletedFlag: boolean;
+  @Column({ name: 'is_deleted', default: false })
+  isDeleted: boolean;
 }

@@ -6,16 +6,19 @@ import { type Request } from 'express';
 import configuration from './config/configuration';
 import { LoggerModule, Params } from 'nestjs-pino';
 import { v4 as uuidv4 } from 'uuid';
-import { DynamoDBModule } from './dynamodb/dynamodb.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { OrganizationModule } from './organization/organization.module';
-import { SurveyModule } from './survey/survey.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
+import { ClerkModule } from './auth/clerk.module';
+import { TeamModule } from './team/team.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -30,15 +33,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       }),
       inject: [ConfigService],
     }),
-    OrganizationModule,
-    SurveyModule,
+    TeamModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       typePaths: ['./**/*.graphql'],
-    }),
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [configuration],
+      context: ({ req }) => ({ req }),
     }),
     LoggerModule.forRootAsync({
       imports: [],
@@ -61,9 +60,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         };
       },
     }),
-    DynamoDBModule,
+    AuthModule,
+    ClerkModule,
+  ],
+  providers: [
+    AppService,
   ],
   controllers: [AppController],
-  providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

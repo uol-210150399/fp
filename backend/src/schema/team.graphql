@@ -1,160 +1,39 @@
-type TeamQuery {
-  get(input: TeamGetInput!): TeamGetOutput!
-  list(input: TeamListInput!): TeamListOutput!
-}
-
-type TeamMutation {
-  create(input: TeamCreateInput!): TeamCreateOutput!
-  update(input: TeamUpdateInput!): TeamUpdateOutput!
-  delete(input: TeamDeleteInput!): TeamDeleteOutput!
-  addUser(input: TeamAddUserInput!): TeamAddUserOutput!
-  removeUser(input: TeamRemoveUserInput!): TeamRemoveUserOutput!
-}
-
-# Team Get
-input TeamGetInput {
-  id: String!
-}
-
-union TeamGetOutput = TeamGetSuccess | TeamGetFailure
-
-type TeamGetSuccess {
-  team: Team!
-}
-
-type TeamGetFailure {
-  error: TeamGetError!
-}
-
-type TeamGetError {
-  message: String!
-}
-
-# Team List
-input TeamListInput {
-  pagination: PaginationInput!
-}
-
-union TeamListOutput = TeamListSuccess | TeamListFailure
-
-type TeamListSuccess {
-  teams: TeamConnection!
-}
-
-type TeamListFailure {
-  error: TeamListError!
-}
-
-type TeamListError {
-  message: String!
-}
-
-# Team Create
+"""
+Team Inputs
+"""
 input TeamCreateInput {
   name: String!
-  description: String
 }
 
-union TeamCreateOutput = TeamCreateSuccess | TeamCreateFailure
-
-type TeamCreateSuccess {
-  team: Team!
-}
-
-type TeamCreateFailure {
-  error: TeamCreateError!
-}
-
-type TeamCreateError {
-  message: String!
-}
-
-# Team Update
 input TeamUpdateInput {
-  id: String!
+  id: ID!
   name: String
-  description: String
 }
 
-union TeamUpdateOutput = TeamUpdateSuccess | TeamUpdateFailure
-
-type TeamUpdateSuccess {
-  team: Team!
-}
-
-type TeamUpdateFailure {
-  error: TeamUpdateError!
-}
-
-type TeamUpdateError {
-  message: String!
-}
-
-# Team Delete
 input TeamDeleteInput {
-  id: String!
+  id: ID!
 }
 
-union TeamDeleteOutput = TeamDeleteSuccess | TeamDeleteFailure
-
-type TeamDeleteSuccess {
-  team: Team!
+"""
+Team Operation Outputs
+"""
+type TeamResponse {
+  data: Team
+  error: Error
 }
 
-type TeamDeleteFailure {
-  error: TeamDeleteError!
+type TeamsResponse {
+  data: TeamConnection!
+  error: Error
 }
 
-type TeamDeleteError {
-  message: String!
-}
-
-# Team Add User
-input TeamAddUserInput {
-  teamId: String!
-  userId: String!
-}
-
-union TeamAddUserOutput = TeamAddUserSuccess | TeamAddUserFailure
-
-type TeamAddUserSuccess {
-  team: Team!
-}
-
-type TeamAddUserFailure {
-  error: TeamAddUserError!
-}
-
-type TeamAddUserError {
-  message: String!
-}
-
-# Team Remove User
-input TeamRemoveUserInput {
-  teamId: String!
-  userId: String!
-}
-
-union TeamRemoveUserOutput = TeamRemoveUserSuccess | TeamRemoveUserFailure
-
-type TeamRemoveUserSuccess {
-  team: Team!
-}
-
-type TeamRemoveUserFailure {
-  error: TeamRemoveUserError!
-}
-
-type TeamRemoveUserError {
-  message: String!
-}
-
-# Team Type
+"""
+Team Types
+"""
 type Team implements Node {
-  id: String!
+  id: ID!
   name: String!
-  description: String
-  users: [User!]!
+  members: [TeamMember!]!
   projects: [Project!]!
   isDeleted: Boolean!
   createdAt: Date!
