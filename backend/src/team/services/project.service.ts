@@ -73,7 +73,7 @@ export class ProjectService {
     }
 
     // Verify team exists
-    await this.teamService.getTeam(input.teamId);
+    await this.teamService.getTeam(input.teamId, userId);
 
     const project = this.projectRepository.create({
       name: input.name,
@@ -81,8 +81,7 @@ export class ProjectService {
       createdByMembershipId: membership.id,
     });
 
-    await this.projectRepository.save(project);
-    return this.getProject(project.id);
+    return this.projectRepository.save(project);
   }
 
   async updateProject(input: ProjectUpdateInput, userId: string): Promise<ProjectEntity> {
@@ -104,8 +103,7 @@ export class ProjectService {
       project.name = input.name;
     }
 
-    await this.projectRepository.save(project);
-    return this.getProject(project.id);
+    return this.projectRepository.save(project);
   }
 
   async deleteProject(id: string, userId: string): Promise<ProjectEntity> {
