@@ -17,6 +17,15 @@ type Query {
     pagination: PaginationInput
     filter: ProjectsFilterInput
   ): ProjectsResponse!
+
+  """
+  Survey Operations
+  """
+  survey(id: ID!): SurveyResponse!
+  surveys(
+    pagination: PaginationInput
+    filter: ProjectsFilterInput
+  ): SurveysResponse!
 }
 
 type Mutation {
@@ -40,6 +49,15 @@ type Mutation {
   createProject(input: ProjectCreateInput!): ProjectResponse!
   updateProject(input: ProjectUpdateInput!): ProjectResponse!
   deleteProject(input: ProjectDeleteInput!): ProjectResponse!
+
+  """
+  Survey Operations
+  """
+  createSurvey(input: SurveyCreateInput!): SurveyResponse!
+  updateSurvey(input: SurveyUpdateInput!): SurveyResponse!
+  updateSurveyForm(input: SurveyFormUpdateInput!): SurveyFormResponse!
+  publishSurvey(input: SurveyPublishInput!): SurveyResponse!
+  deleteSurvey(id: ID!): SurveyResponse!
 }
 
 """

@@ -2,30 +2,211 @@
 type Survey implements Node {
   id: ID!
   title: String!
+  description: String
+  projectId: ID!
+  status: SurveyStatus!
+  form: SurveyForm
+  context: JSON
   isDeleted: Boolean!
   createdAt: Date!
   updatedAt: Date
 }
 
-type SurveyQuestion {
+type SurveyForm {
   id: ID!
-  text: String!
-  type: QuestionType!
-  required: Boolean!
-  options: [String!]
+  sections: [SurveySection!]!
+  context: JSON
+  updatedAt: Date
 }
 
-enum QuestionType {
-  TEXT
-  MULTIPLE_CHOICE
-  SINGLE_CHOICE
-  RATING
-  YES_NO
+type SurveySection {
+  id: ID!
+  title: String!
+  description: String
+  fields: [SurveyFieldType!]!
+}
+
+"""
+Question Types
+"""
+type TextQuestion {
+  id: ID!
+  text: String!
+  description: String
+  required: Boolean!
+  type: SurveyFieldTypeEnum!
+}
+
+type MultipleChoiceQuestion {
+  id: ID!
+  text: String!
+  description: String
+  required: Boolean!
+  choices: [String!]!
+  allowMultiple: Boolean
+  allowOther: Boolean
+  randomize: Boolean
+  type: SurveyFieldTypeEnum!
+}
+
+type RatingQuestion {
+  id: ID!
+  text: String!
+  description: String
+  required: Boolean!
+  labels: [String!]!
+  steps: Int
+  startAtOne: Boolean
+  type: SurveyFieldTypeEnum!
+}
+
+type StatementField {
+  id: ID!
+  text: String!
+  buttonText: String
+  textSize: TextSize
+  type: SurveyFieldTypeEnum!
+}
+
+type RankingQuestion {
+  id: ID!
+  text: String!
+  description: String
+  required: Boolean!
+  choices: [String!]!
+  randomize: Boolean
+  type: SurveyFieldTypeEnum!
+}
+
+type MatrixQuestion {
+  id: ID!
+  text: String!
+  description: String
+  required: Boolean!
+  rows: [String!]!
+  columns: [String!]!
+  allowMultiplePerRow: Boolean!
+  type: SurveyFieldTypeEnum!
+}
+
+type NumberQuestion {
+  id: ID!
+  text: String!
+  description: String
+  required: Boolean!
+  min: Float
+  max: Float
+  allowDecimals: Boolean!
+  unitLabel: String
+  type: SurveyFieldTypeEnum!
+}
+
+type Checkpoint {
+  id: ID!
+  title: String!
+  condition: String!
+  target: CheckpointTarget!
+  type: SurveyFieldTypeEnum!
+}
+
+type CheckpointTarget {
+  type: TargetType!
+  value: String
+}
+
+"""
+Enums
+"""
+enum TextSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum TargetType {
+  SKIP_TO_SECTION
+  SKIP_TO_QUESTION
+  EXTERNAL_URL
+  END
 }
 
 enum SurveyStatus {
   DRAFT
   PUBLISHED
+}
+
+"""
+Union Types
+"""
+union SurveyFieldType =
+  | TextQuestion
+  | MultipleChoiceQuestion
+  | RatingQuestion
+  | StatementField
+  | RankingQuestion
+  | MatrixQuestion
+  | NumberQuestion
+  | Checkpoint
+
+enum SurveyFieldTypeEnum {
+  TextQuestion
+  MultipleChoiceQuestion
+  RatingQuestion
+  StatementField
+  RankingQuestion
+  MatrixQuestion
+  NumberQuestion
+  Checkpoint
+}
+
+"""
+Input Types
+"""
+input SurveyCreateInput {
+  projectId: ID!
+  title: String!
+  description: String
+}
+
+input SurveyUpdateInput {
+  id: ID!
+  title: String
+  description: String
+}
+
+input SurveyFormUpdateInput {
+  surveyId: ID!
+  sections: [SurveySectionInput!]!
+  context: JSON
+}
+
+input SurveySectionInput {
+  id: ID
+  title: String!
+  description: String
+  fields: [JSON!]!
+}
+
+input SurveyPublishInput {
+  id: ID!
+}
+
+"""
+Survey Operation Outputs
+"""
+type SurveyFormResponse {
+  data: SurveyForm
+  error: Error
+}
+
+type SurveyResponse {
+  data: Survey
+  error: Error
+}
+
+type SurveysResponse {
+  data: SurveyConnection!
+  error: Error
 }
 
 type SurveyConnection implements Connection {
