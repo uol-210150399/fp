@@ -132,7 +132,6 @@ const initialQuestions = [
 ]
 
 
-
 export default function RespondentDetail() {
   const { id } = useLoaderData<typeof clientLoader>()
   const [questions, setQuestions] = useState(initialQuestions)
