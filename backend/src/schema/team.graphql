@@ -3,6 +3,7 @@ Team Inputs
 """
 input TeamCreateInput {
   name: String!
+  slug: String
 }
 
 input TeamUpdateInput {
@@ -36,6 +37,7 @@ type Team implements Node {
   members: [TeamMember!]!
   projects: [Project!]!
   isDeleted: Boolean!
+  slug: String!
   createdAt: Date!
   updatedAt: Date
 }

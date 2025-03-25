@@ -35,12 +35,13 @@ export class TeamMemberMutationResolver {
         error: null,
       };
     } catch (error) {
+      console.log('error', error)
       return {
         data: null,
         error: {
           message: error instanceof TeamPermissionDeniedException
-            ? error.message
-            : error.message || 'Failed to create team member',
+            ? error?.message
+            : error?.message || 'Failed to create team member',
           code: error instanceof TeamPermissionDeniedException
             ? ErrorCode.FORBIDDEN
             : ErrorCode.INTERNAL_ERROR,

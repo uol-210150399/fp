@@ -10,7 +10,7 @@ import { SurveySectionEntity } from './survey-section.entity';
 import { SurveyFieldTypeEnum } from 'src/generated/graphql';
 
 @Entity('survey_section_field')
-export class SurveySectionFieldEntity extends BaseEntity {
+export class SurveySectionFieldEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
 

@@ -4,22 +4,22 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  BeforeInsert,
   Unique,
 } from 'typeorm';
 import { SurveyEntity } from './survey.entity';
-import { BaseEntity } from 'src/common/model/base.entity';
-import { TeamMembershipEntity } from 'src/team/model/team-membership.entity';
-import typeOrmDataSource from "src/config/typeorm.config"
+import { BaseEntity } from '../../common/model/base.entity';
+import { TeamMembershipEntity } from '../../team/model/team-membership.entity';
+import { Injectable } from '@nestjs/common';
 
 @Entity('published_survey')
 @Unique(['surveyId', 'version'])
+@Injectable()
 export class PublishedSurveyEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
 
-  @Column({ name: 'form_data', type: 'jsonb' })
-  formData: any;
+  @Column({ name: 'form_snapshot', type: 'jsonb' })
+  formSnapshot: any;
 
   @ManyToOne(() => SurveyEntity, (survey) => survey.publishedVersions)
   @JoinColumn({ name: 'survey_id', referencedColumnName: 'surveyId' })
@@ -31,21 +31,13 @@ export class PublishedSurveyEntity extends BaseEntity {
   @Column({ name: 'version', type: 'integer' })
   version: number;
 
-  @ManyToOne(() => TeamMembershipEntity, (teamMembership) => teamMembership.id)
-  @JoinColumn({ name: 'published_by', referencedColumnName: 'id' })
+  @Column({ name: 'published_by' })
+  publishedById: string;
+
+  @ManyToOne(() => TeamMembershipEntity)
+  @JoinColumn({ name: 'published_by' })
   publishedBy: TeamMembershipEntity;
 
-  @Column({ name: 'created_at', type: 'timestamptz' })
+  @Column({ name: 'created_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
-
-  @BeforeInsert()
-  async setVersion() {
-    const lastVersion = await typeOrmDataSource.getRepository(PublishedSurveyEntity)
-      .createQueryBuilder('published_survey')
-      .where('published_survey.survey_id = :surveyId', { surveyId: this.surveyId })
-      .orderBy('published_survey.version', 'DESC')
-      .getOne();
-
-    this.version = lastVersion ? lastVersion.version + 1 : 1;
-  }
 }

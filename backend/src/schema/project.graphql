@@ -5,6 +5,10 @@ input ProjectsFilterInput {
   teamId: String!
 }
 
+input SurveysFilterInput {
+  projectId: ID
+}
+
 input ProjectCreateInput {
   teamId: String!
   name: String!

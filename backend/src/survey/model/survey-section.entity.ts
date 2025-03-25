@@ -11,7 +11,7 @@ import { AuditableEntity } from 'src/common/model/auditable.entity';
 import { SurveySectionFieldEntity } from './survey-section-field.entity';
 
 @Entity('survey_section')
-export class SurveySectionEntity extends AuditableEntity {
+export class SurveySectionEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
 
@@ -31,6 +31,6 @@ export class SurveySectionEntity extends AuditableEntity {
   order: number;
 
   @ManyToOne(() => SurveyFormEntity, (form) => form.sections)
-  @JoinColumn({ name: 'form_id', referencedColumnName: 'surveyFormId' })
+  @JoinColumn({ name: 'form_id', referencedColumnName: 'id' })
   form: SurveyFormEntity;
 } 

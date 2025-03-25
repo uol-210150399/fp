@@ -14,6 +14,7 @@ import { AuditableEntity } from 'src/common/model/auditable.entity';
 import { PublishedSurveyEntity } from './published-survey.entity';
 import { SurveyStatus } from 'src/generated/graphql';
 import { SurveyFormEntity } from './survey-form.entity';
+import { SurveySessionEntity } from './survey-response.entity';
 
 @Entity('survey')
 export class SurveyEntity extends AuditableEntity {
@@ -52,6 +53,9 @@ export class SurveyEntity extends AuditableEntity {
   @Column({ name: 'updated_by' })
   updatedBy: string;
 
+  @Column({ unique: true })
+  key: string;
+
   @ManyToOne(() => ProjectEntity)
   @JoinColumn({ name: 'project_id', referencedColumnName: 'id' })
   project: ProjectEntity;
@@ -61,4 +65,7 @@ export class SurveyEntity extends AuditableEntity {
 
   @OneToMany(() => PublishedSurveyEntity, (publishedSurvey) => publishedSurvey.survey)
   publishedVersions: PublishedSurveyEntity[];
+
+  @OneToMany(() => SurveySessionEntity, (session) => session.survey)
+  sessions: SurveySessionEntity[];
 }

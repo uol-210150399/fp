@@ -31,4 +31,7 @@ export class SurveyFormEntity extends BaseEntity {
 
   @OneToMany(() => SurveySectionEntity, (section) => section.form)
   sections: SurveySectionEntity[];
+
+  @Column({ name: 'welcome_message', nullable: true })
+  welcomeMessage: string;
 } 

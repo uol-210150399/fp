@@ -5,8 +5,8 @@ type Survey implements Node {
   description: String
   projectId: ID!
   status: SurveyStatus!
+  key: String!
   form: SurveyForm
-  context: JSON
   isDeleted: Boolean!
   createdAt: Date!
   updatedAt: Date
@@ -15,7 +15,8 @@ type Survey implements Node {
 type SurveyForm {
   id: ID!
   sections: [SurveySection!]!
-  context: JSON
+  context: String
+  welcomeMessage: String
   updatedAt: Date
 }
 
@@ -23,7 +24,8 @@ type SurveySection {
   id: ID!
   title: String!
   description: String
-  fields: [SurveyFieldType!]!
+  fields: [JSON!]!
+  order: Int!
 }
 
 """
@@ -35,6 +37,8 @@ type TextQuestion {
   description: String
   required: Boolean!
   type: SurveyFieldTypeEnum!
+  instructions: String
+  order: Int!
 }
 
 type MultipleChoiceQuestion {
@@ -42,11 +46,16 @@ type MultipleChoiceQuestion {
   text: String!
   description: String
   required: Boolean!
-  choices: [String!]!
+  choices: [Choice!]!
   allowMultiple: Boolean
-  allowOther: Boolean
   randomize: Boolean
   type: SurveyFieldTypeEnum!
+  order: Int!
+}
+
+type Choice {
+  id: ID!
+  text: String!
 }
 
 type RatingQuestion {
@@ -55,9 +64,10 @@ type RatingQuestion {
   description: String
   required: Boolean!
   labels: [String!]!
-  steps: Int
   startAtOne: Boolean
+  steps: Int
   type: SurveyFieldTypeEnum!
+  order: Int!
 }
 
 type StatementField {
@@ -66,6 +76,7 @@ type StatementField {
   buttonText: String
   textSize: TextSize
   type: SurveyFieldTypeEnum!
+  order: Int!
 }
 
 type RankingQuestion {
@@ -73,9 +84,10 @@ type RankingQuestion {
   text: String!
   description: String
   required: Boolean!
-  choices: [String!]!
+  choices: [Choice!]!
   randomize: Boolean
   type: SurveyFieldTypeEnum!
+  order: Int!
 }
 
 type MatrixQuestion {
@@ -87,6 +99,7 @@ type MatrixQuestion {
   columns: [String!]!
   allowMultiplePerRow: Boolean!
   type: SurveyFieldTypeEnum!
+  order: Int!
 }
 
 type NumberQuestion {
@@ -96,17 +109,17 @@ type NumberQuestion {
   required: Boolean!
   min: Float
   max: Float
-  allowDecimals: Boolean!
-  unitLabel: String
+  unit: String
   type: SurveyFieldTypeEnum!
+  order: Int!
 }
 
 type Checkpoint {
   id: ID!
-  title: String!
   condition: String!
   target: CheckpointTarget!
   type: SurveyFieldTypeEnum!
+  order: Int!
 }
 
 type CheckpointTarget {
@@ -135,10 +148,7 @@ enum SurveyStatus {
   PUBLISHED
 }
 
-"""
-Union Types
-"""
-union SurveyFieldType =
+union SurveyQuestion =
   | TextQuestion
   | MultipleChoiceQuestion
   | RatingQuestion
@@ -146,7 +156,6 @@ union SurveyFieldType =
   | RankingQuestion
   | MatrixQuestion
   | NumberQuestion
-  | Checkpoint
 
 enum SurveyFieldTypeEnum {
   TextQuestion
@@ -168,16 +177,9 @@ input SurveyCreateInput {
   description: String
 }
 
-input SurveyUpdateInput {
-  id: ID!
-  title: String
-  description: String
-}
-
-input SurveyFormUpdateInput {
+input SurveySectionBulkCreateInput {
   surveyId: ID!
   sections: [SurveySectionInput!]!
-  context: JSON
 }
 
 input SurveySectionInput {
@@ -187,6 +189,20 @@ input SurveySectionInput {
   fields: [JSON!]!
 }
 
+input SurveyUpdateInput {
+  id: ID!
+  title: String
+  description: String
+  welcomeMessage: String
+  context: String
+}
+
+input SurveyFormUpdateInput {
+  surveyId: ID!
+  sections: [SurveySectionInput!]!
+  context: String
+}
+
 input SurveyPublishInput {
   id: ID!
 }
@@ -194,11 +210,6 @@ input SurveyPublishInput {
 """
 Survey Operation Outputs
 """
-type SurveyFormResponse {
-  data: SurveyForm
-  error: Error
-}
-
 type SurveyResponse {
   data: Survey
   error: Error
@@ -217,4 +228,126 @@ type SurveyConnection implements Connection {
 type SurveyEdge implements Edge {
   cursor: String!
   node: Survey!
+}
+
+"""
+Form Operation Responses
+"""
+type SurveySectionResponse {
+  data: SurveySection
+  error: Error
+}
+
+type SurveyFieldResponse {
+  data: JSON
+  error: Error
+}
+
+"""
+Form Operation Types
+"""
+enum SurveyFormOperationType {
+  ADD_SECTION
+  UPDATE_SECTION
+  DELETE_SECTION
+  MOVE_SECTION
+  ADD_FIELD
+  UPDATE_FIELD
+  DELETE_FIELD
+  MOVE_FIELD_IN_SECTION
+}
+
+"""
+Generic Form Operation Input
+"""
+input SurveyFormOperationInput {
+  formId: ID!
+  operation: SurveyFormOperationType!
+  # Generic data field that will be validated based on operation type
+  data: JSON!
+}
+
+"""
+Form Operation Response
+"""
+type SurveyFormOperationResponse {
+  data: Survey!
+  error: Error
+}
+
+"""
+Survey Session Types
+"""
+type SurveySession implements Node {
+  id: ID!
+  publishedSurveyId: ID!
+  surveyId: ID!
+  startedAt: Date!
+  completedAt: Date
+  lastActivityAt: Date!
+  answers: [SurveySessionAnswer!]!
+  createdAt: Date!
+}
+
+type SurveySessionAnswer {
+  questionId: ID!
+  value: JSON!
+}
+
+"""
+Survey Session Inputs
+"""
+input SurveySessionAnswerInput {
+  questionId: ID!
+  value: JSON!
+}
+
+input StartSurveySessionInput {
+  surveyKey: String!
+}
+
+input SubmitSurveySessionAnswerInput {
+  sessionId: ID!
+  answer: SurveySessionAnswerInput!
+}
+
+"""
+Survey Session Outputs
+"""
+type StartSurveySessionResponse {
+  questions: [JSON]
+  metadata: SurveySessionResponseMetadata
+  error: Error
+}
+
+type SurveySessionResponseMetadata {
+  sessionId: ID!
+}
+
+type SubmitSurveySessionAnswerResponse {
+  nextQuestions: [JSON]
+  error: Error
+}
+
+extend type Mutation {
+  startSurveySession(
+    input: StartSurveySessionInput!
+  ): StartSurveySessionResponse!
+  submitSurveySessionAnswer(
+    input: SubmitSurveySessionAnswerInput!
+  ): SubmitSurveySessionAnswerResponse!
+  updateSurveySectionsBulk(
+    input: SurveySectionBulkCreateInput!
+  ): SurveyResponse!
+  publishSurvey(input: SurveyPublishInput!): SurveyResponse!
+}
+
+type SurveySessionConnection implements Connection {
+  edges: [SurveySessionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type SurveySessionEdge implements Edge {
+  cursor: String!
+  node: SurveySession!
 }

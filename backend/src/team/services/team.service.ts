@@ -61,8 +61,11 @@ export class TeamService {
   }
 
   async createTeam(input: TeamCreateInput, userId: string): Promise<TeamEntity> {
-    const slug = input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    // Generate slug from input.slug if provided, otherwise from name
+    const slug = input.slug?.toLowerCase().replace(/[^a-z0-9]+/g, '-') ||
+      input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
+    // Check for existing team with same slug
     const existingTeam = await this.teamRepository.findOne({
       where: { slug }
     });
@@ -77,7 +80,7 @@ export class TeamService {
       createdByUserId: userId,
     });
 
-    await this.teamRepository.save(team);
+    const savedTeam = await this.teamRepository.save(team);
 
     // Create team membership for creator as OWNER
     const membership = this.teamMembershipRepository.create({
@@ -88,7 +91,7 @@ export class TeamService {
 
     await this.teamMembershipRepository.save(membership);
 
-    return this.getTeam(team.id, userId);
+    return savedTeam;
   }
 
   async updateTeam(input: TeamUpdateInput, userId: string): Promise<TeamEntity> {

@@ -12,6 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ClerkModule } from './auth/clerk.module';
 import { TeamModule } from './team/team.module';
+import { SurveyModule } from './survey/survey.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { TeamModule } from './team/team.module';
       inject: [ConfigService],
     }),
     TeamModule,
+    SurveyModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       typePaths: ['./**/*.graphql'],

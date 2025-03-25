@@ -23,7 +23,7 @@ export class ProjectService {
   async getProject(id: string): Promise<ProjectEntity> {
     const project = await this.projectRepository.findOne({
       where: { id: id },
-      relations: ['team', 'team.memberships', 'createdByMembership', 'createdByMembership.user'],
+      relations: ['team', 'team.memberships', 'createdByMembership'],
     });
 
     if (!project) {
@@ -43,7 +43,6 @@ export class ProjectService {
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.team', 'team')
       .leftJoinAndSelect('project.createdByMembership', 'createdByMembership')
-      .leftJoinAndSelect('createdByMembership.user', 'user')
       .take(first + 1);
 
     if (input.filter?.teamId) {
@@ -121,8 +120,10 @@ export class ProjectService {
       throw new ProjectPermissionDeniedException('You do not have permission to delete this project');
     }
 
+    project.isDeleted = true;
+    project.updatedAt = new Date();
     // Soft delete the project
-    await this.projectRepository.softDelete(id);
+    await this.projectRepository.save(project);
     return project;
   }
 

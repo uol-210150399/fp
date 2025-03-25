@@ -8,6 +8,7 @@ export class TeamDTOMapper {
     return {
       id: team.id,
       name: team.name,
+      slug: team.slug,
       createdAt: team.createdAt.toISOString(),
       updatedAt: team.updatedAt?.toISOString(),
       isDeleted: team.isDeleted,

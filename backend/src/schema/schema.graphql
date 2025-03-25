@@ -24,7 +24,7 @@ type Query {
   survey(id: ID!): SurveyResponse!
   surveys(
     pagination: PaginationInput
-    filter: ProjectsFilterInput
+    filter: SurveysFilterInput
   ): SurveysResponse!
 }
 
@@ -55,8 +55,9 @@ type Mutation {
   """
   createSurvey(input: SurveyCreateInput!): SurveyResponse!
   updateSurvey(input: SurveyUpdateInput!): SurveyResponse!
-  updateSurveyForm(input: SurveyFormUpdateInput!): SurveyFormResponse!
-  publishSurvey(input: SurveyPublishInput!): SurveyResponse!
+  updateSurveyForm(
+    input: SurveyFormOperationInput!
+  ): SurveyFormOperationResponse!
   deleteSurvey(id: ID!): SurveyResponse!
 }
 
@@ -93,7 +94,7 @@ type PageInfo {
 """
 Common error handling
 """
-interface Error {
+type Error {
   message: String!
   code: ErrorCode!
 }
