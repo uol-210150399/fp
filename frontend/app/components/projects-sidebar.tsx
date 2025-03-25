@@ -3,10 +3,11 @@ import type * as React from "react"
 import { MoreHorizontal } from "lucide-react"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarMenu, SidebarGroup, SidebarHeader, SidebarRail, SidebarMenuButton, SidebarGroupLabel, SidebarMenuItem } from "@/components/ui/sidebar"
 import { TeamSwitcher } from "@/components/team-switcher"
-import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import { formatDistanceToNow } from 'date-fns';
 import { Project, Team } from "@/backend.types"
+import { TeamSettingsDialog } from "@/components/settings/team-settings-dialog"
+
 
 const data = {
   recentSurveysActivity: [
@@ -33,16 +34,19 @@ interface ProjectsSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 export function ProjectsSidebar({ recentProjects, team, ...props }: ProjectsSidebarProps) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
-        <TeamSwitcher />
+        <TeamSwitcher teamId={team?.id} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain team={team} />
-        {recentProjects && <RecentProjects projects={recentProjects} />}
-        <RecentSurveysActivity surveys={data.recentSurveysActivity} />
+        {/* {recentProjects && <RecentProjects projects={recentProjects} />} */}
       </SidebarContent>
       <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <TeamSettingsDialog teamId={team?.id} />
+          </SidebarMenuItem>
+        </SidebarMenu>
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

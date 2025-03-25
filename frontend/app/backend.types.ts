@@ -309,7 +309,7 @@ export type QuerysurveyArgs = {
 
 
 export type QuerysurveysArgs = {
-  filter?: InputMaybe<ProjectsFilterInput>;
+  filter?: InputMaybe<SurveysFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
 };
 
@@ -470,7 +470,7 @@ export enum SurveyFormOperationType {
 }
 
 export type SurveyFormUpdateInput = {
-  context?: InputMaybe<Scalars['JSON']['input']>;
+  context?: InputMaybe<Scalars['String']['input']>;
   sections: Array<SurveySectionInput>;
   surveyId: Scalars['ID']['input'];
 };
@@ -559,9 +559,15 @@ export enum SurveyStatus {
 }
 
 export type SurveyUpdateInput = {
+  context?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
   title?: InputMaybe<Scalars['String']['input']>;
+  welcomeMessage?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type SurveysFilterInput = {
+  projectId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type SurveysResponse = {
@@ -856,6 +862,7 @@ export type ResolversTypes = {
   SurveySessionResponseMetadata: ResolverTypeWrapper<SurveySessionResponseMetadata>;
   SurveyStatus: SurveyStatus;
   SurveyUpdateInput: SurveyUpdateInput;
+  SurveysFilterInput: SurveysFilterInput;
   SurveysResponse: ResolverTypeWrapper<Omit<SurveysResponse, 'data'> & { data: ResolversTypes['SurveyConnection'] }>;
   TargetType: TargetType;
   Team: ResolverTypeWrapper<Team>;
@@ -942,6 +949,7 @@ export type ResolversParentTypes = {
   SurveySessionEdge: SurveySessionEdge;
   SurveySessionResponseMetadata: SurveySessionResponseMetadata;
   SurveyUpdateInput: SurveyUpdateInput;
+  SurveysFilterInput: SurveysFilterInput;
   SurveysResponse: Omit<SurveysResponse, 'data'> & { data: ResolversParentTypes['SurveyConnection'] };
   Team: Team;
   TeamConnection: TeamConnection;

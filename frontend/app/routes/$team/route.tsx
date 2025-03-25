@@ -1,7 +1,5 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { ClientLoaderFunctionArgs, useLoaderData } from "@remix-run/react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
-import { ProjectsSidebar } from "./components/projects-sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { useQuery } from '@apollo/client/react/hooks/useQuery.js';
@@ -13,15 +11,17 @@ import { useState } from "react";
 import { Project } from "@/backend.types";
 import { ProjectsGrid } from "@/components/projects-grid";
 import { InvalidTeam } from "@/components/invalid-team";
+import { ProjectsSidebar } from "@/components/projects-sidebar";
 
-export const clientLoader = async ({ params }: LoaderFunctionArgs) => {
+export const clientLoader = async ({ params }: ClientLoaderFunctionArgs) => {
+  const { team } = params;
   return {
-    teamSlug: params.team
-  }
-}
+    team,
+  };
+};
 
 export default function TeamIndex() {
-  const { teamSlug } = useLoaderData<typeof clientLoader>();
+  const { team } = useLoaderData<typeof clientLoader>();
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
 
   const { data } = useQuery(GET_TEAMS, {
@@ -30,19 +30,19 @@ export default function TeamIndex() {
     }
   });
 
-  const team = data?.teams.data.edges.find(
-    (edge: { node: { slug: string } }) => edge.node.slug === teamSlug
+  const teamData = data?.teams.data.edges.find(
+    (edge: { node: { slug: string } }) => edge.node.slug === team
   )?.node;
 
-  if (data && !team) {
+  if (data && !teamData) {
     return <InvalidTeam />;
   }
 
-  const projects = team?.projects.filter((p: Project) => !p.isDeleted);
+  const projects = teamData?.projects.filter((p: Project) => !p.isDeleted);
 
   return (
     <SidebarProvider>
-      <ProjectsSidebar recentProjects={projects?.slice(0, 4)} team={team} />
+      <ProjectsSidebar recentProjects={projects?.slice(0, 4)} team={teamData} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center justify-between px-4">
           <div className="flex items-center gap-2">
@@ -63,14 +63,14 @@ export default function TeamIndex() {
         </header>
         <ProjectsGrid
           projects={projects ?? []}
-          teamSlug={teamSlug ?? ""}
-          teamId={team?.id ?? ""}
+          teamSlug={team ?? ""}
+          teamId={teamData?.id ?? ""}
         />
       </SidebarInset>
       <CreateProjectDialog
         open={createProjectOpen}
         onOpenChange={setCreateProjectOpen}
-        teamId={team?.id ?? ""}
+        teamId={teamData?.id ?? ""}
       />
     </SidebarProvider>
   )

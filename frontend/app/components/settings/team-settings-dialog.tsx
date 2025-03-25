@@ -22,10 +22,9 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
 import { MembersSettings } from "./members-settings"
 import { GeneralSettings } from "./general-settings"
-import { Team } from "@/backend.types"
+import { useTeam } from "@/hooks/use-teams"
 
 const TABS = [
   { name: "General", icon: Building2, component: GeneralSettings },
@@ -33,12 +32,14 @@ const TABS = [
 ] as const
 
 interface TeamSettingsDialogProps {
-  team: Team;
+  teamId: string;
 }
 
-export function TeamSettingsDialog({ team }: TeamSettingsDialogProps) {
+export function TeamSettingsDialog({ teamId }: TeamSettingsDialogProps) {
   const [open, setOpen] = React.useState(false)
   const [activeTab, setActiveTab] = React.useState<typeof TABS[number]["name"]>(TABS[0].name)
+
+  const { team } = useTeam(teamId);
 
   const ActiveComponent = TABS.find(tab => tab.name === activeTab)?.component
 
@@ -79,7 +80,7 @@ export function TeamSettingsDialog({ team }: TeamSettingsDialogProps) {
           </Sidebar>
           <main className="flex h-[580px] flex-1 flex-col overflow-hidden">
             <div className="flex flex-1 flex-col overflow-y-auto p-6">
-              {ActiveComponent && <ActiveComponent team={team} />}
+              {ActiveComponent && <ActiveComponent team={team!} />}
             </div>
           </main>
         </SidebarProvider>
