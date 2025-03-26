@@ -1,11 +1,6 @@
 import { Args, Mutation, Resolver, Context } from '@nestjs/graphql';
 import { SurveyResponseService } from '../services/survey-response.service';
-import {
-  StartSurveySessionResponse,
-  SubmitSurveySessionAnswerResponse,
-  ErrorCode,
-} from '../types';
-import { StartSurveySessionInput, SubmitSurveySessionAnswerInput } from 'src/generated/graphql';
+import { Error, ErrorCode, SessionStatus, StartSurveySessionInput, SubmitSurveySessionAnswerInput } from 'src/generated/graphql';
 
 @Resolver()
 export class SurveyResponseResolver {
@@ -13,54 +8,71 @@ export class SurveyResponseResolver {
     private readonly surveyResponseService: SurveyResponseService,
   ) { }
 
-  @Mutation(() => StartSurveySessionResponse)
+  @Mutation()
   async startSurveySession(
     @Args('input') input: StartSurveySessionInput,
     @Context() context: any,
-  ): Promise<StartSurveySessionResponse> {
+  ): Promise<any> {
     try {
-      const session = await this.surveyResponseService.startSurveySession(
+      const { session, nextQuestion, status } = await this.surveyResponseService.startSurveySession(
         { surveyKey: input.surveyKey },
         context?.req?.ip,
       );
 
       return {
-        questions: [],
+        nextQuestion,
         metadata: {
           sessionId: session.id,
+          surveyId: session.surveyId,
+          status,
         },
         error: null,
       };
     } catch (error) {
       return {
-        questions: [],
+        nextQuestion: null,
         metadata: null,
         error: {
-          code: ErrorCode.SESSION_START_ERROR,
+          code: ErrorCode.INTERNAL_ERROR,
           message: error.message,
         },
       };
     }
   }
 
-  @Mutation(() => SubmitSurveySessionAnswerResponse)
+  @Mutation()
   async submitSurveySessionAnswer(
     @Args('input') input: SubmitSurveySessionAnswerInput,
-  ): Promise<SubmitSurveySessionAnswerResponse> {
+  ): Promise<{
+    nextQuestion: any,
+    metadata: {
+      status: SessionStatus,
+      redirectUrl?: string,
+    },
+    error: Error
+  }> {
     try {
-      const session = await this.surveyResponseService.submitSurveySessionAnswer(
-        { sessionId: input.sessionId, answer: input.answer },
+      const { nextQuestion, status } = await this.surveyResponseService.submitSurveySessionAnswer(
+        input,
       );
 
       return {
-        nextQuestions: [],
+        nextQuestion,
+        metadata: {
+          status,
+          redirectUrl: null,
+        },
         error: null,
       };
     } catch (error) {
       return {
-        nextQuestions: [],
+        nextQuestion: null,
+        metadata: {
+          status: SessionStatus.COMPLETED,
+          redirectUrl: null,
+        },
         error: {
-          code: ErrorCode.ANSWER_SUBMISSION_ERROR,
+          code: ErrorCode.INTERNAL_ERROR,
           message: error.message,
         },
       };

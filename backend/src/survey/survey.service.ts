@@ -12,6 +12,8 @@ import { SurveyValidationException } from './exceptions/survey.exceptions';
 import { SurveySectionFieldEntity } from './model/survey-section-field.entity';
 import { PublishedSurveyEntity } from './model/published-survey.entity';
 import { SurveyFormDTOMapper } from './dtos/survey-dto-mapper';
+import { SurveySessionEntity } from './model/survey-response.entity';
+import { SessionStateMapper } from './mappers/session-state.mapper';
 
 @Injectable()
 export class SurveyService {
@@ -20,6 +22,10 @@ export class SurveyService {
     private readonly surveyRepository: Repository<SurveyEntity>,
     @InjectRepository(SurveyFormEntity)
     private readonly formRepository: Repository<SurveyFormEntity>,
+    @InjectRepository(SurveySessionEntity)
+    private readonly sessionRepository: Repository<SurveySessionEntity>,
+    @InjectRepository(PublishedSurveyEntity)
+    private readonly publishedSurveyRepository: Repository<PublishedSurveyEntity>,
     @Inject(SurveyKeyUtils)
     private readonly keyUtils: SurveyKeyUtils,
   ) { }
@@ -347,5 +353,52 @@ export class SurveyService {
     });
 
     return this.getSurvey(surveyId, userId);
+  }
+
+  async inviteRespondent(input: {
+    surveyId: string;
+    email: string;
+    name?: string;
+    role?: string;
+  }, userId: string): Promise<SurveySessionEntity> {
+    const survey = await this.getSurvey(input.surveyId, userId);
+    await this.getTeamMembership(survey.projectId, userId);
+
+    if (survey.status !== SurveyStatus.PUBLISHED) {
+      throw new SurveyValidationException('Survey is not published yet, please publish the survey first');
+    }
+
+    const latestPublishedSurvey = await this.publishedSurveyRepository.findOne({
+      where: { surveyId: survey.surveyId },
+      order: { version: 'DESC' },
+    });
+
+    if (!latestPublishedSurvey) {
+      throw new SurveyValidationException('Survey is not published yet, please publish the survey first');
+    }
+
+    const session = this.sessionRepository.create({
+      surveyId: survey.surveyId,
+      respondentData: {
+        email: input.email,
+        name: input.name,
+        role: input.role,
+      },
+      startedAt: new Date(),
+      lastActivityAt: new Date(),
+      state: SessionStateMapper.toState(latestPublishedSurvey.formSnapshot),
+    });
+
+    return this.sessionRepository.save(session);
+  }
+
+  async listSurveyRespondents(surveyId: string, userId: string): Promise<SurveySessionEntity[]> {
+    const survey = await this.getSurvey(surveyId, userId);
+    await this.getTeamMembership(survey.projectId, userId);
+
+    return this.sessionRepository.find({
+      where: { surveyId },
+      order: { createdAt: 'DESC' },
+    });
   }
 }

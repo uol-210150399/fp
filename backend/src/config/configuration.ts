@@ -7,4 +7,5 @@ export default () => ({
   dbPassword: process.env.DB_PASSWORD,
   nodeEnv: process.env.NODE_ENV,
   clerkSecretKey: process.env.CLERK_SECRET_KEY,
+  openaiApiKey: process.env.OPENAI_API_KEY,
 });

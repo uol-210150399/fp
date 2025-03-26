@@ -1,112 +1,242 @@
-// import { Injectable } from '@nestjs/common';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { Repository } from 'typeorm';
-// import { PublishedSurveyEntity } from '../model/published-survey.entity';
-// import { SurveySessionEntity } from '../model/survey-response.entity';
-// import { SurveyFieldTypeEnum, SurveyQuestion } from '../../generated/graphql';
-// import { SurveyValidationException } from '../exceptions/survey.exceptions';
-// import { SurveyValidationUtils } from '../utils/survey-validation.utils';
-// import { SurveyQuestion as NewSurveyQuestion } from '../types';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { SurveySessionEntity } from '../model/survey-response.entity';
+import { SubmitSurveySessionAnswerInput, SurveyFieldTypeEnum } from 'src/generated/graphql';
+import { SessionStatus } from 'src/generated/graphql';
+import { SurveyValidationException } from '../exceptions/survey.exceptions';
+import {
+  QuestionStatus,
+  SessionState,
+  SessionField,
+  SessionCheckpoint,
+  SessionTextQuestion,
+  SessionMultipleChoiceQuestion,
+  SessionRatingQuestion
+} from '../mappers/session-state.mapper';
+import { ConversationHistory } from './scouti/schema';
+import { v4 as uuidv4 } from 'uuid';
+import { ScoutiEngine } from './scouti/engine';
 
-// @Injectable()
-// export class SurveySessionManagerService {
-//   constructor(
-//     @InjectRepository(PublishedSurveyEntity)
-//     private readonly publishedSurveyRepository: Repository<PublishedSurveyEntity>,
-//   ) { }
+@Injectable()
+export class SurveySessionManagerService {
+  constructor(
+    @InjectRepository(SurveySessionEntity)
+    private readonly sessionRepository: Repository<SurveySessionEntity>,
+    private readonly scoutiEngine: ScoutiEngine
+  ) {
+    this.scoutiEngine = new ScoutiEngine();
+  }
 
-//   async getInitialQuestions(sessionId: string): Promise<SurveyQuestion[]> {
-//     // Implementation of getting initial questions
-//     return [];
-//   }
+  private flattenQuestions(state: SessionState): SessionField[] {
+    return state.topics.reduce((allFields, topic) => {
+      const fields = topic.fields.map(field => field) as SessionField[];
+      return [...allFields, ...fields];
+    }, [] as SessionField[]);
+  }
 
-//   async getNextQuestions(sessionId: string, answeredQuestionId: string): Promise<SurveyQuestion[]> {
-//     // Implementation of getting next questions based on answered question
-//     return [];
-//   }
+  private async updateSessionState(
+    sessionId: string,
+    updateFn: (state: SessionState) => SessionState
+  ): Promise<SessionState> {
+    const session = await this.sessionRepository.findOne({
+      where: { id: sessionId }
+    });
 
-//   private async getPublishedSurveyWithForm(publishedSurveyId: string): Promise<PublishedSurveyEntity> {
-//     const publishedSurvey = await this.publishedSurveyRepository.findOne({
-//       where: { id: publishedSurveyId },
-//       relations: ['form', 'form.sections', 'form.sections.fields'],
-//     });
+    if (!session) {
+      throw new SurveyValidationException('Session not found');
+    }
 
-//     if (!publishedSurvey) {
-//       throw new SurveyValidationException('Published survey not found');
-//     }
+    const updatedState = updateFn(session.state);
+    session.state = updatedState;
+    session.lastActivityAt = new Date();
+    await this.sessionRepository.save(session);
 
-//     return publishedSurvey;
-//   }
+    return updatedState;
+  }
 
-//   private getAnswerableQuestionsFromSection(section: any, startIndex: number = 0): SurveyQuestion[] {
-//     const questions: SurveyQuestion[] = [];
+  private handleCheckpoint(state: SessionState, currentQuestion: SessionField): SessionState {
+    const topic = state.topics.find(t => t.fields.some(f => f.id === currentQuestion.id));
+    const field = topic.fields.find(f => f.id === currentQuestion.id) as SessionCheckpoint;
+    field.response = "The condition is not met";
+    field.status = QuestionStatus.Asked;
+    return state;
+  }
 
-//     for (let i = startIndex; i < section.fields.length; i++) {
-//       const field = section.fields[i];
+  private getQuestionData(question: SessionField) {
+    const baseData = {
+      id: question.id,
+      type: question.type,
+      order: question.order
+    };
 
-//       // Skip non-question fields
-//       if (field.type === SurveyFieldTypeEnum.Checkpoint ||
-//         field.type === SurveyFieldTypeEnum.StatementField) {
-//         continue;
-//       }
+    switch (question.type) {
+      case 'TextQuestion': {
+        const textQuestion = question as SessionTextQuestion;
+        return {
+          ...baseData,
+          text: textQuestion.text,
+          description: textQuestion.description,
+          required: textQuestion.required,
+          instructions: textQuestion.instructions
+        };
+      }
+      case 'MultipleChoiceQuestion': {
+        const mcQuestion = question as SessionMultipleChoiceQuestion;
+        return {
+          ...baseData,
+          text: mcQuestion.text,
+          description: mcQuestion.description,
+          required: mcQuestion.required,
+          choices: mcQuestion.choices,
+          allowMultiple: mcQuestion.allowMultiple
+        };
+      }
+      case 'RatingQuestion': {
+        const ratingQuestion = question as SessionRatingQuestion;
+        return {
+          ...baseData,
+          text: ratingQuestion.text,
+          description: ratingQuestion.description,
+          required: ratingQuestion.required,
+          labels: ratingQuestion.labels,
+          steps: ratingQuestion.steps
+        };
+      }
+      default:
+        return baseData;
+    }
+  }
 
-//       // Convert field to Question format based on type
-//       const question = this.convertFieldToQuestion(field, section.id);
-//       if (question) {
-//         questions.push(question);
-//         // For now, return only one question at a time
-//         break;
-//       }
-//     }
+  async getNextQuestion(sessionId: string): Promise<{
+    nextQuestion: any;
+    status: SessionStatus;
+  }> {
+    const session = await this.sessionRepository.findOne({
+      where: { id: sessionId }
+    });
 
-//     return questions;
-//   }
+    const questions = this.flattenQuestions(session.state);
+    const nextQuestion = questions.find(q => q.status === QuestionStatus.Created);
 
-//   private convertFieldToQuestion(field: any, sectionId: string): SurveyQuestion {
-//     return {
-//       id: field.id,
-//       text: field.text,
-//       description: field.description || null,
-//       required: field.required || false,
-//       type: field.type,
-//       choices: field.choices || null,
-//       labels: field.labels || null,
-//       min: field.min || null,
-//       max: field.max || null,
-//       rows: field.rows || null,
-//       buttonText: field.buttonText || null,
-//     };
-//   }
+    if (!nextQuestion) {
+      const session = await this.sessionRepository.findOne({
+        where: { id: sessionId }
+      });
+      session.completedAt = new Date();
+      await this.sessionRepository.save(session);
+      return {
+        nextQuestion: null,
+        status: SessionStatus.COMPLETED
+      };
+    }
 
-//   private async evaluateCheckpoint(checkpoint: any, answers: any[]): Promise<boolean> {
-//     const condition = checkpoint.condition;
-//     try {
-//       const context = {
-//         answers: answers.reduce((acc, answer) => {
-//           acc[answer.questionId] = answer.value;
-//           return acc;
-//         }, {}),
-//       };
+    if (nextQuestion.type === 'Checkpoint') {
+      session.state = this.handleCheckpoint(session.state, nextQuestion as SessionCheckpoint);
 
-//       return new Function('context', `with(context) { return ${condition}; }`)(context);
-//     } catch (error) {
-//       console.error('Error evaluating checkpoint condition:', error);
-//       return false;
-//     }
-//   }
+      await this.updateSessionState(sessionId, () => {
+        return session.state;
+      });
 
-//   private findTargetSection(target: any, sections: any[]): any {
-//     if (!target || !target.value) {
-//       return null;
-//     }
+      return this.getNextQuestion(sessionId);
+    }
 
-//     switch (target.type) {
-//       case 'SKIP_TO_SECTION':
-//         return sections.find(s => s.id === target.value);
-//       case 'END':
-//         return null;
-//       default:
-//         return null;
-//     }
-//   }
-// } 
+    if (nextQuestion.type === 'TextQuestion') {
+      const repetitionResult = await this.scoutiEngine.detectRepetition(nextQuestion as SessionTextQuestion, this.buildConversationHistory(session));
+      if (repetitionResult.detected) {
+        session.state = this.skipRepetition(session.state, nextQuestion, repetitionResult);
+        await this.updateSessionState(sessionId, () => {
+          return session.state;
+        });
+        return this.getNextQuestion(sessionId);
+      }
+    }
+
+    return {
+      nextQuestion: this.getQuestionData(nextQuestion),
+      status: SessionStatus.IN_PROGRESS
+    };
+  }
+
+  async generateNextQuestion(input: SubmitSurveySessionAnswerInput): Promise<{
+    nextQuestion: any;
+    status: SessionStatus;
+  }> {
+
+    const session = await this.sessionRepository.findOne({
+      where: { id: input.sessionId }
+    });
+    const questions = this.flattenQuestions(session.state);
+    const currentQuestion = questions.find(q => q.id === input.questionId);
+
+    if (currentQuestion.type === 'TextQuestion') {
+      const conversationHistory = this.buildConversationHistory(session);
+      const followUpQuestions = await this.scoutiEngine.generateFollowUpQuestions(session.state, currentQuestion as SessionTextQuestion, input.answer, conversationHistory);
+      session.state = this.addFollowUpQuestions(session.state, currentQuestion, followUpQuestions);
+    }
+
+    await this.updateSessionState(input.sessionId, (state) => {
+      const answeredQuestion = questions.find(q => q.id === input.questionId);
+      const topic = state.topics.find(t =>
+        t.fields.some(f => f.id === answeredQuestion.id)
+      );
+      const field = topic.fields.find(f => f.id === answeredQuestion.id);
+
+      field.response = input.answer;
+      field.status = QuestionStatus.Asked;
+
+      return state;
+    });
+
+    // Get next question
+    return this.getNextQuestion(input.sessionId);
+  }
+
+  private buildConversationHistory(session: SurveySessionEntity): ConversationHistory {
+    const history = []
+    session.state.topics.flatMap(t => t.fields).forEach(f => {
+      history.push({
+        role: 'assistant',
+        content: f.text
+      });
+      history.push({
+        role: 'user',
+        content: f.response
+      });
+    });
+    return history;
+  }
+
+  private addFollowUpQuestions(state: SessionState, currentQuestion: SessionField, followUpQuestions: string[]) {
+    const questions = this.flattenQuestions(state);
+    const currentQuestionIndex = questions.findIndex(q => q.id === currentQuestion.id);
+    const followUpQuestionsWithIds = followUpQuestions.map(q => ({
+      id: uuidv4(),
+      type: SurveyFieldTypeEnum.TextQuestion,
+      text: q,
+      description: "",
+      required: true,
+      instructions: "",
+      order: questions.length,
+      isQuestion: true,
+      response: "",
+      status: QuestionStatus.Created,
+      isFollowup: true,
+      leadingQuestion: currentQuestion.id,
+    }));
+    const topic = state.topics.find(t => t.fields.some(f => f.id === currentQuestion.id));
+    topic.fields.splice(currentQuestionIndex + 1, 0, ...followUpQuestionsWithIds);
+    return state;
+  }
+
+  private skipRepetition(state: SessionState, nextQuestion: SessionField, repetitionResult: {
+    detected: boolean;
+    reason: string;
+  }) {
+    const topic = state.topics.find(t => t.fields.some(f => f.id === nextQuestion.id));
+    const field = topic.fields.find(f => f.id === nextQuestion.id);
+    field.status = QuestionStatus.Skipped;
+    field.response = "The question was skipped because it was repetitive. Here is the rationale: " + repetitionResult.reason;
+    return state;
+  }
+}

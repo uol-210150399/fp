@@ -6,8 +6,9 @@ import { PublishedSurveyEntity } from '../model/published-survey.entity';
 import { SurveyEntity } from '../model/survey.entity';
 import { SurveyKeyUtils } from '../utils/survey-key.utils';
 import { SurveyValidationException } from '../exceptions/survey.exceptions';
-import { SurveySessionAnswer } from 'src/generated/graphql';
-// import { SurveySessionManagerService } from './survey-session-manager.service';
+import { SessionStatus, SubmitSurveySessionAnswerInput } from 'src/generated/graphql';
+import { SurveySessionManagerService } from './survey-session-manager.service';
+import { SessionStateMapper } from '../mappers/session-state.mapper';
 
 @Injectable()
 export class SurveyResponseService {
@@ -20,14 +21,40 @@ export class SurveyResponseService {
     private readonly publishedSurveyRepository: Repository<PublishedSurveyEntity>,
     @Inject(SurveyKeyUtils)
     private readonly surveyKeyUtils: SurveyKeyUtils,
-    // @Inject(SurveySessionManagerService)
-    // private readonly sessionManager: SurveySessionManagerService,
+    @Inject(SurveySessionManagerService)
+    private readonly sessionManager: SurveySessionManagerService,
   ) { }
 
-  async startSurveySession(input: { surveyKey: string }, context: { ip?: string; }): Promise<SurveySessionEntity> {
+  async startSurveySession(input: { surveyKey: string, sessionId?: string }, context: { ip?: string; }): Promise<{
+    nextQuestion: any,
+    status: SessionStatus,
+    session: SurveySessionEntity,
+  }> {
     // Validate survey key
     if (!this.surveyKeyUtils.validateKey(input.surveyKey)) {
       throw new SurveyValidationException('Invalid survey key');
+    }
+
+    // Check if survey session
+    if (input.sessionId) {
+      const session = await this.responseRepository.findOne({
+        where: { id: input.sessionId },
+      });
+
+      if (!session) {
+        throw new SurveyValidationException('Session not found');
+      }
+
+      if (session.survey.key !== input.surveyKey) {
+        throw new SurveyValidationException('Session does not match survey');
+      }
+
+      const { nextQuestion, status } = await this.sessionManager.getNextQuestion(session.id);
+      return {
+        nextQuestion,
+        status,
+        session,
+      }
     }
 
     // Find the survey and its latest published version
@@ -48,31 +75,40 @@ export class SurveyResponseService {
       throw new SurveyValidationException('Survey is not published');
     }
 
-    // Create new response
     const response = this.responseRepository.create({
       surveyId: survey.surveyId,
       publishedSurveyId: latestPublishedVersion.id,
+      state: SessionStateMapper.toState(latestPublishedVersion.formSnapshot),
       startedAt: new Date(),
-      answers: [],
-      respondentIp: context.ip,
+      respondentData: {
+        ip: context.ip,
+      },
+      lastActivityAt: new Date(),
     });
 
-    return this.responseRepository.save(response);
+    const savedResponse = await this.responseRepository.save(response);
+    const { nextQuestion, status } = await this.sessionManager.getNextQuestion(savedResponse.id);
+    return {
+      nextQuestion,
+      status,
+      session: savedResponse,
+    }
   }
 
-  async submitSurveySessionAnswer(input: { sessionId: string; answer: SurveySessionAnswer }): Promise<SurveySessionEntity> {
-    const response = await this.responseRepository.findOne({
-      where: { id: input.sessionId },
-      relations: ['publishedSurvey', 'publishedSurvey.form', 'publishedSurvey.form.sections', 'publishedSurvey.form.sections.fields'],
-    });
-
-    if (!response) {
-      throw new SurveyValidationException('Response not found');
+  async submitSurveySessionAnswer(input: SubmitSurveySessionAnswerInput): Promise<{
+    nextQuestion: any,
+    status: SessionStatus,
+  }> {
+    const session = await this.getSurveySession(input.sessionId);
+    if (!session) {
+      throw new SurveyValidationException('Session not found');
     }
 
-
-    response.lastAnsweredAt = new Date();
-    return this.responseRepository.save(response);
+    const { nextQuestion, status } = await this.sessionManager.generateNextQuestion(input);
+    return {
+      nextQuestion,
+      status,
+    };
   }
 
   async getSurveySession(sessionId: string): Promise<SurveySessionEntity> {

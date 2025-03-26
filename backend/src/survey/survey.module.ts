@@ -14,6 +14,7 @@ import { SurveySessionEntity } from './model/survey-response.entity';
 import { AuthModule } from '../auth/auth.module';
 import { SurveyKeyUtils } from './utils/survey-key.utils';
 import { SurveyFormOperationService } from './services/survey-form-operation.service';
+import { SurveySessionManagerService } from './services/survey-session-manager.service';
 
 @Module({
   imports: [
@@ -35,7 +36,8 @@ import { SurveyFormOperationService } from './services/survey-form-operation.ser
     SurveyResponseService,
     SurveyKeyUtils,
     SurveyFormOperationService,
+    SurveySessionManagerService,
   ],
-  exports: [SurveyService],
+  exports: [SurveyService, SurveySessionManagerService],
 })
 export class SurveyModule { }

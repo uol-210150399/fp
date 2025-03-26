@@ -268,7 +268,7 @@ input SurveyFormOperationInput {
 }
 
 """
-Form Operation Response
+Generic Form Operation Response
 """
 type SurveyFormOperationResponse {
   data: Survey!
@@ -280,52 +280,67 @@ Survey Session Types
 """
 type SurveySession implements Node {
   id: ID!
-  publishedSurveyId: ID!
   surveyId: ID!
+  respondentData: RespondentData!
+  state: JSON!
   startedAt: Date!
   completedAt: Date
   lastActivityAt: Date!
-  answers: [SurveySessionAnswer!]!
   createdAt: Date!
+  updatedAt: Date!
 }
 
-type SurveySessionAnswer {
-  questionId: ID!
-  value: JSON!
+type RespondentData {
+  email: String!
+  name: String
+  role: String
 }
 
-"""
-Survey Session Inputs
-"""
-input SurveySessionAnswerInput {
-  questionId: ID!
-  value: JSON!
+type SurveySessionResponse {
+  data: SurveySession
+  error: Error
+}
+
+type StartSurveySessionResponse {
+  nextQuestion: JSON
+  status: SessionStatus!
+  error: Error
+}
+
+enum SessionStatus {
+  STARTED
+  IN_PROGRESS
+  COMPLETED
+  ENDED
 }
 
 input StartSurveySessionInput {
   surveyKey: String!
+  sessionId: String
+}
+
+input InviteRespondentInput {
+  surveyId: ID!
+  email: String!
+  name: String
+  role: String
 }
 
 input SubmitSurveySessionAnswerInput {
   sessionId: ID!
-  answer: SurveySessionAnswerInput!
-}
-
-"""
-Survey Session Outputs
-"""
-type StartSurveySessionResponse {
-  questions: [JSON]
-  metadata: SurveySessionResponseMetadata
-  error: Error
-}
-
-type SurveySessionResponseMetadata {
-  sessionId: ID!
+  questionId: ID!
+  answer: JSON!
 }
 
 type SubmitSurveySessionAnswerResponse {
-  nextQuestions: [JSON]
+  nextQuestion: JSON
+  metadata: JSON
+  error: Error
+}
+
+type SubmitSurveySessionAnswerResponse {
+  nextQuestion: JSON
+  metadata: JSON
   error: Error
 }
 
@@ -340,6 +355,11 @@ extend type Mutation {
     input: SurveySectionBulkCreateInput!
   ): SurveyResponse!
   publishSurvey(input: SurveyPublishInput!): SurveyResponse!
+  inviteRespondent(input: InviteRespondentInput!): SurveySessionResponse!
+}
+
+extend type Query {
+  listSurveyRespondents(surveyId: ID!): [SurveySession!]!
 }
 
 type SurveySessionConnection implements Connection {

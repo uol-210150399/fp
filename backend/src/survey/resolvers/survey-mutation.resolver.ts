@@ -172,4 +172,33 @@ export class SurveyMutationResolver {
       };
     }
   }
+
+  @Mutation()
+  async inviteRespondent(
+    @Args('input') input: { surveyId: string; email: string; name?: string; role?: string },
+    @CurrentUser() userId: string,
+  ): Promise<{ data: any; error: { message: string; code: ErrorCode } | null }> {
+    try {
+      const session = await this.surveyService.inviteRespondent(input, userId);
+
+      return {
+        data: session,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: {
+          message: error.message,
+          code: error instanceof SurveyNotFoundException
+            ? ErrorCode.NOT_FOUND
+            : error instanceof SurveyPermissionDeniedException
+              ? ErrorCode.FORBIDDEN
+              : error instanceof SurveyValidationException
+                ? ErrorCode.VALIDATION_ERROR
+                : ErrorCode.INTERNAL_ERROR,
+        },
+      };
+    }
+  }
 } 

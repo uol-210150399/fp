@@ -5,11 +5,14 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   Unique,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { SurveyEntity } from './survey.entity';
 import { BaseEntity } from '../../common/model/base.entity';
 import { TeamMembershipEntity } from '../../team/model/team-membership.entity';
 import { Injectable } from '@nestjs/common';
+import { SurveyDTOMapper } from '../dtos/survey-dto-mapper';
 
 @Entity('published_survey')
 @Unique(['surveyId', 'version'])
@@ -38,6 +41,12 @@ export class PublishedSurveyEntity extends BaseEntity {
   @JoinColumn({ name: 'published_by' })
   publishedBy: TeamMembershipEntity;
 
-  @Column({ name: 'created_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ name: 'form', type: 'jsonb' })
+  form: ReturnType<typeof SurveyDTOMapper.toGraphQL>;
+
+  @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
