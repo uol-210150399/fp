@@ -139,7 +139,6 @@ enum TextSize {
 enum TargetType {
   SKIP_TO_SECTION
   SKIP_TO_QUESTION
-  EXTERNAL_URL
   END
 }
 

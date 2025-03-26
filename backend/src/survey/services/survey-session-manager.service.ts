@@ -55,12 +55,72 @@ export class SurveySessionManagerService {
     return updatedState;
   }
 
-  private handleCheckpoint(state: SessionState, currentQuestion: SessionField): SessionState {
-    const topic = state.topics.find(t => t.fields.some(f => f.id === currentQuestion.id));
+  private async handleCheckpoint(session: SurveySessionEntity, currentQuestion: SessionCheckpoint): Promise<SurveySessionEntity> {
+    const checkpointResult = await this.scoutiEngine.evaluateCheckpoint(currentQuestion.condition, this.buildConversationHistory(session));
+    const topic = session.state.topics.find(t => t.fields.some(f => f.id === currentQuestion.id));
     const field = topic.fields.find(f => f.id === currentQuestion.id) as SessionCheckpoint;
-    field.response = "The condition is not met";
+
+    field.response = `The condition was evaluated to ${checkpointResult.result}. The reasoning behind the evaluation was: ${checkpointResult.steps}.`;
     field.status = QuestionStatus.Asked;
-    return state;
+
+    // Determine if we should proceed with skip logic based on condition type
+    const shouldProceed = checkpointResult.conditionType === 'POSITIVE'
+      ? checkpointResult.result === 'TRUE'
+      : ['TRUE', 'UNKNOWN'].includes(checkpointResult.result);
+
+    if (shouldProceed) {
+      const allQuestions = this.flattenQuestions(session.state);
+
+      switch (currentQuestion.target.type) {
+        case 'SKIP_TO_QUESTION': {
+          const targetIndex = allQuestions.findIndex(q => q.id === currentQuestion.target.value);
+          const currentIndex = allQuestions.findIndex(q => q.id === currentQuestion.id);
+
+          // Skip all questions between current and target
+          for (let i = currentIndex + 1; i < targetIndex; i++) {
+            const questionToSkip = allQuestions[i];
+            const skipTopic = session.state.topics.find(t => t.fields.some(f => f.id === questionToSkip.id));
+            const skipField = skipTopic.fields.find(f => f.id === questionToSkip.id);
+            skipField.status = QuestionStatus.Skipped;
+            skipField.response = "Skipped due to checkpoint condition";
+          }
+          break;
+        }
+
+        case 'SKIP_TO_SECTION': {
+          const targetTopic = session.state.topics.find(t => t.id === currentQuestion.target.value);
+          const targetQuestion = targetTopic.fields[0]; // First question of the target topic
+          const currentIndex = allQuestions.findIndex(q => q.id === currentQuestion.id);
+          const targetIndex = allQuestions.findIndex(q => q.id === targetQuestion.id);
+
+          // Skip all questions between current and first question of target topic
+          for (let i = currentIndex + 1; i < targetIndex; i++) {
+            const questionToSkip = allQuestions[i];
+            const skipTopic = session.state.topics.find(t => t.fields.some(f => f.id === questionToSkip.id));
+            const skipField = skipTopic.fields.find(f => f.id === questionToSkip.id);
+            skipField.status = QuestionStatus.Skipped;
+            skipField.response = "Skipped due to checkpoint condition";
+          }
+          break;
+        }
+
+        case 'END': {
+          // Skip all remaining questions and mark survey as completed
+          const currentIndex = allQuestions.findIndex(q => q.id === currentQuestion.id);
+          for (let i = currentIndex + 1; i < allQuestions.length; i++) {
+            const questionToSkip = allQuestions[i];
+            const skipTopic = session.state.topics.find(t => t.fields.some(f => f.id === questionToSkip.id));
+            const skipField = skipTopic.fields.find(f => f.id === questionToSkip.id);
+            skipField.status = QuestionStatus.Skipped;
+            skipField.response = "Skipped due to survey end condition";
+          }
+          session.completedAt = new Date();
+          break;
+        }
+      }
+    }
+
+    return session;
   }
 
   private getQuestionData(question: SessionField) {
@@ -112,7 +172,7 @@ export class SurveySessionManagerService {
     nextQuestion: any;
     status: SessionStatus;
   }> {
-    const session = await this.sessionRepository.findOne({
+    let session = await this.sessionRepository.findOne({
       where: { id: sessionId }
     });
 
@@ -132,12 +192,9 @@ export class SurveySessionManagerService {
     }
 
     if (nextQuestion.type === 'Checkpoint') {
-      session.state = this.handleCheckpoint(session.state, nextQuestion as SessionCheckpoint);
+      session = await this.handleCheckpoint(session, nextQuestion as SessionCheckpoint);
 
-      await this.updateSessionState(sessionId, () => {
-        return session.state;
-      });
-
+      await this.sessionRepository.save(session);
       return this.getNextQuestion(sessionId);
     }
 
@@ -195,14 +252,19 @@ export class SurveySessionManagerService {
   private buildConversationHistory(session: SurveySessionEntity): ConversationHistory {
     const history = []
     session.state.topics.flatMap(t => t.fields).forEach(f => {
-      history.push({
-        role: 'assistant',
-        content: f.text
-      });
-      history.push({
-        role: 'user',
-        content: f.response
-      });
+      if (f.type === SurveyFieldTypeEnum.Checkpoint) {
+        return;
+      }
+      if (f.response) {
+        history.push({
+          role: 'assistant',
+          content: f.text
+        });
+        history.push({
+          role: 'user',
+          content: f.response
+        });
+      }
     });
     return history;
   }

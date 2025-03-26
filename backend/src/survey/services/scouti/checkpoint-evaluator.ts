@@ -41,11 +41,9 @@ IMPORTANT:
 
 Return a JSON object with:
 {
-  "output": [
-    evaluation_result,  // (TRUE, FALSE, or UNKNOWN)
-    reasoning_steps,    // string
-    condition_type      // (POSITIVE or NEGATIVE)
-  ]
+    "result": "TRUE" | "FALSE" | "UNKNOWN",
+    "steps": "string",
+    "conditionType": "POSITIVE" | "NEGATIVE"
 }
     `
     const updatedPrompt = prompt.replace("{condition}", condition).replace("{conversationHistory}", conversationHistory.join("\n"));
