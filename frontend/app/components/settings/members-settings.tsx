@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Check, ChevronsUpDown } from "lucide-react";
-import { Team } from "@/backend.types";
+import { Team, TeamMemberRole } from "@/backend.types";
 import { useUsers } from "@/hooks/use-users";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import {
@@ -87,8 +87,7 @@ export function MembersSettings({ team }: MembersSettingsProps) {
     await removeMember({
       variables: {
         input: {
-          teamId: team.id,
-          memberId
+          id: memberId
         }
       }
     });
@@ -101,7 +100,8 @@ export function MembersSettings({ team }: MembersSettingsProps) {
       ...user,
       displayName: user?.firstName && user?.lastName
         ? `${user.firstName} ${user.lastName}`
-        : user?.email || member.id
+        : user?.email || member.id,
+      id: member.id
     }
   }).sort((a, b) => {
     // Sort by role first (OWNER first, then ADMIN, then MEMBER)
@@ -113,6 +113,7 @@ export function MembersSettings({ team }: MembersSettingsProps) {
     return (a.displayName || '').localeCompare(b.displayName || '');
   });
 
+  const currentUserIsOwner = team.members?.some(member => member.userId === userId && member.role === TeamMemberRole.OWNER);
   return (
     <div className="space-y-6">
       <div>
@@ -217,17 +218,18 @@ export function MembersSettings({ team }: MembersSettingsProps) {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {member.role !== 'OWNER' && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveMember(member.id)}
-                      disabled={removingMember}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Remove member</span>
-                    </Button>
-                  )}
+                  {(currentUserIsOwner && member.userId !== userId) &&
+                    (currentUserIsOwner || member.role !== TeamMemberRole.OWNER) && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveMember(member.id)}
+                        disabled={removingMember}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Remove member</span>
+                      </Button>
+                    )}
                 </TableCell>
               </TableRow>
             ))}

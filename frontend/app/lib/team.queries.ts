@@ -87,9 +87,10 @@ export const ADD_TEAM_MEMBER = gql`
 
 export const REMOVE_TEAM_MEMBER = gql`
   mutation RemoveTeamMember($input: TeamMemberDeleteInput!) {
-    removeTeamMember(input: $input) {
+    deleteTeamMember(input: $input) {
       data {
         id
+        role
       }
       error {
         message
