@@ -124,27 +124,6 @@ export function SurveySetup({
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="welcomeMessage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Welcome Message</FormLabel>
-                  <FormDescription>
-                    This message will be shown to respondents at the start of the survey
-                  </FormDescription>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter welcome message"
-                      className="min-h-[100px]"
-                      {...field}
-                      disabled={disabled || isUpdating}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
           </div>
           {/* 
           <Separator />

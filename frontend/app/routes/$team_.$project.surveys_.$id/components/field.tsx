@@ -15,7 +15,16 @@ import { Button } from "@/components/ui/button"
 import { ChevronDownIcon, ChevronUpIcon, CopyIcon, MoreHorizontalIcon, TrashIcon } from "lucide-react"
 import { QuestionTypeSwitcher } from "./field-switcher"
 import { SurveyFieldTypeEnum } from "@/backend.types"
-
+import { Collapsible } from "@/components/ui/collapsible"
+import { CollapsibleContent } from "@/components/ui/collapsible"
+import { TextQuestion } from "./questions/text-question"
+import { SelectQuestion } from "./questions/select-question"
+import { RatingScaleQuestion } from "./questions/rating-question"
+import { StatementQuestion } from "./questions/statement"
+import { MatrixQuestion } from "./questions/matrix-question"
+import { Checkpoint } from "./questions/checkpoint"
+import { RankingQuestion } from "./questions/ranking-question"
+import { NumberQuestion } from "./questions/number-question"
 interface FieldContainerProps {
   dragEnablerProps: DraggableProvided
   isDragging?: boolean
@@ -77,7 +86,7 @@ export const Field = ({
 
                   formContext.setValue(fieldId, {
                     ...updatedQuestion,
-                    ...(updatedQuestion.type === SurveyFieldTypeEnum.Checkpoint ? { condition: "" } : { title: existingQuestion.type !== SurveyFieldTypeEnum.Checkpoint ? existingQuestion.title : "" }),
+                    ...(updatedQuestion.type === SurveyFieldTypeEnum.Checkpoint ? { condition: "" } : { text: existingQuestion.type !== SurveyFieldTypeEnum.Checkpoint ? existingQuestion.text : "" }),
                     id: existingQuestion.id,
                   })
                 }}
@@ -142,7 +151,7 @@ export const Field = ({
           </div>
           <div className="relative flex-1">
             <FormField
-              name={sectionField.type === SurveyFieldTypeEnum.Checkpoint ? `${fieldId}.condition` : `${fieldId}.title`}
+              name={sectionField.type === SurveyFieldTypeEnum.Checkpoint ? `${fieldId}.condition` : `${fieldId}.text`}
               render={({ field }) => (
                 <FormItem className="space-y-1.5 flex-1 text-start">
                   <FormControl>
@@ -153,8 +162,7 @@ export const Field = ({
                       }
                       value={field.value}
                       onChange={(e) => field.onChange(e.target.value)}
-                      id={`${fieldId}.title`}
-                      disabled={disabled}
+                      id={`${fieldId}.text`}
                     />
                   </FormControl>
                   <FormMessage />
@@ -167,16 +175,23 @@ export const Field = ({
       {isExpanded ? (
         <Collapsible open={isExpanded} className={cn("flex flex-col")}>
           <CollapsibleContent className="p-4 rounded-md shadow-none border overflow-visible">
-            {QComponent && (
-              <QComponent
-                disabled={disabled}
-                questionFormKey={questionFormKey}
-                topicId={topicId}
-                onCancel={() => {
-                  updateExpandedQuestionId(null)
-                }}
-              />
-            )}
+            {sectionField.type === SurveyFieldTypeEnum.TextQuestion ? (
+              <TextQuestion fieldFormKey={fieldId} />
+            ) : sectionField.type === SurveyFieldTypeEnum.MultipleChoiceQuestion ? (
+              <SelectQuestion questionFormKey={fieldId} />
+            ) : sectionField.type === SurveyFieldTypeEnum.RatingQuestion ? (
+              <RatingScaleQuestion fieldFormKey={fieldId} />
+            ) : sectionField.type === SurveyFieldTypeEnum.StatementField ? (
+              <StatementQuestion questionFormKey={fieldId} />
+            ) : sectionField.type === SurveyFieldTypeEnum.MatrixQuestion ? (
+              <MatrixQuestion questionFormKey={fieldId} topicId={sectionField.topicId} />
+            ) : sectionField.type === SurveyFieldTypeEnum.Checkpoint ? (
+              <Checkpoint fieldFormKey={fieldId} onCancel={() => setIsExpanded(false)} />
+            ) : sectionField.type === SurveyFieldTypeEnum.RankingQuestion ? (
+              <RankingQuestion questionFormKey={fieldId} />
+            ) : sectionField.type === SurveyFieldTypeEnum.NumberQuestion ? (
+              <NumberQuestion fieldFormKey={fieldId} />
+            ) : null}
           </CollapsibleContent>
         </Collapsible>
       ) : null}
@@ -198,6 +213,7 @@ export const generateField = (type: SurveyFieldTypeEnum) => {
         text: '',
         description: '',
         required: false,
+        instructions: '',
       }
 
     case SurveyFieldTypeEnum.MultipleChoiceQuestion:
@@ -206,10 +222,17 @@ export const generateField = (type: SurveyFieldTypeEnum) => {
         text: '',
         description: '',
         required: false,
-        choices: [],
+        choices: [{
+          id: crypto.randomUUID(),
+          text: 'Choice 1',
+          value: 'choice1',
+        }, {
+          id: crypto.randomUUID(),
+          text: 'Choice 2',
+          value: 'choice2',
+        }],
         allowMultiple: false,
         allowOther: false,
-        randomize: false,
       }
 
     case SurveyFieldTypeEnum.RatingQuestion:
@@ -218,8 +241,8 @@ export const generateField = (type: SurveyFieldTypeEnum) => {
         text: '',
         description: '',
         required: false,
-        labels: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'],
-        steps: 5,
+        labels: ['Poor', 'Excellent'],
+        steps: 10,
         startAtOne: false,
       }
 
@@ -237,7 +260,15 @@ export const generateField = (type: SurveyFieldTypeEnum) => {
         text: '',
         description: '',
         required: false,
-        choices: [],
+        choices: [{
+          id: crypto.randomUUID(),
+          text: 'Choice 1',
+          value: 'choice1',
+        }, {
+          id: crypto.randomUUID(),
+          text: 'Choice 2',
+          value: 'choice2',
+        }],
         randomize: false,
       }
 
@@ -247,8 +278,8 @@ export const generateField = (type: SurveyFieldTypeEnum) => {
         text: '',
         description: '',
         required: false,
-        rows: [],
-        columns: [],
+        rows: ["Row 1", "Row 2"],
+        columns: ["Column 1", "Column 2"],
         allowMultiplePerRow: false,
       }
 

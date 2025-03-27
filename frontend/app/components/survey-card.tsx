@@ -19,15 +19,16 @@ import { Separator } from "@/components/ui/separator";
 interface SurveyCardProps {
   survey: Survey;
   teamSlug: string;
+  projectId: string;
 }
 
-export function SurveyCard({ survey, teamSlug }: SurveyCardProps) {
+export function SurveyCard({ survey, teamSlug, projectId }: SurveyCardProps) {
   const { user } = useUser();
 
   return (
     <Card className="group shadow-none relative flex min-h-[116px] w-full flex-col transition-all hover:shadow-md">
       <Link
-        to={`/teams/${teamSlug}/surveys/${survey.id}`}
+        to={`/${teamSlug}/${projectId}/surveys/${survey.id}`}
         className="absolute inset-0 cursor-pointer overflow-hidden rounded-lg"
       >
         <span className="sr-only">View Survey</span>

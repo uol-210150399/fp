@@ -1,7 +1,7 @@
 import { useParams } from "@remix-run/react";
 import { SurveyCard } from "@/components/survey-card";
 import { EmptyState } from "@/components/empty-state";
-import { useState, useMemo, Fragment } from "react";
+import { useState, useMemo, Fragment, useEffect } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useSurveys } from "@/hooks/use-surveys";
 import { CreateSurveyDialog } from "@/components/create-survey-dialog";
@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbPage } from "@/components/ui/breadcrumb";
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Link, useNavigate } from "@remix-run/react";
+import { useProject, useTeam } from "@/hooks/use-teams";
+import { useAuth, useClerk } from "@clerk/clerk-react";
 
 export default function Surveys() {
   const { project: projectId, team: teamSlug } = useParams();
@@ -17,6 +20,17 @@ export default function Surveys() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { surveys, loading, error } = useSurveys(projectId!);
+  const { project } = useProject(teamSlug!, projectId!);
+  const { team } = useTeam(teamSlug!);
+
+  const { isLoaded, isSignedIn } = useAuth();
+  const navigate = useNavigate();
+  const clerk = useClerk()
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      clerk.redirectToSignIn()
+    }
+  }, [isLoaded, isSignedIn, navigate]);
 
   const filteredSurveys = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -56,6 +70,24 @@ export default function Surveys() {
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/">Teams</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to={`/${team?.slug}`}>{team?.name}</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to={`/${team?.slug}/${project?.id}`}>{project?.name}</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbPage>Surveys</BreadcrumbPage>
                 </BreadcrumbItem>
@@ -100,6 +132,7 @@ export default function Surveys() {
                   key={survey.id}
                   survey={survey}
                   teamSlug={teamSlug!}
+                  projectId={projectId!}
                 />
               ))}
             </div>

@@ -54,7 +54,8 @@ export function CreateSurveyDialog({
 
     if (data?.createSurvey.data) {
       onOpenChange(false);
-      navigate(`surveys/${data.createSurvey.data.id}`);
+      const teamSlug = window.location.pathname.split('/')[1];
+      navigate(`/${teamSlug}/${projectId}/surveys/${data.createSurvey.data.id}`);
     }
   };
 

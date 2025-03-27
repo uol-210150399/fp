@@ -1,4 +1,4 @@
-import { useFieldArray, useForm } from "react-hook-form"
+import { useFieldArray, useForm, useWatch, useFormState } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Section } from "./section"
@@ -8,50 +8,13 @@ import { Form } from "@/components/ui/form"
 import { Droppable, Draggable } from "@hello-pangea/dnd"
 import { cn } from "@/lib/utils"
 import { DragDropContext, DropResult } from "@hello-pangea/dnd"
-
-// Mock data for initial form state
-const mockFormData = {
-  sections: [
-    {
-      id: "1",
-      title: "Basic Information",
-      description: "Please provide your basic information",
-      fields: [
-        {
-          id: "q1",
-          type: "TextQuestion",
-          text: "What is your name?",
-          description: "Please enter your full name",
-          required: true,
-          order: 1
-        },
-        {
-          id: "q2",
-          type: "TextQuestion",
-          text: "What is your role?",
-          description: "Your current job title",
-          required: true,
-          order: 2
-        }
-      ]
-    },
-    {
-      id: "2",
-      title: "Experience",
-      description: "Tell us about your experience",
-      fields: [
-        {
-          id: "q3",
-          type: "TextQuestion",
-          text: "How many years of experience do you have?",
-          description: "Describe your relevant experience",
-          required: true,
-          order: 1
-        }
-      ]
-    }
-  ]
-}
+import { useSurvey } from "@/hooks/use-surveys"
+import { useParams } from "@remix-run/react"
+import { useEffect, useState } from "react"
+import { useUpdateSurveyFormSections, usePublishSurvey } from "@/hooks/use-survey-mutations"
+import { generateField } from "./field"
+import { SurveyFieldTypeEnum } from "@/backend.types"
+import { toast } from "sonner"
 
 const formSchema = z.object({
   sections: z.array(z.object({
@@ -65,20 +28,56 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>
 
 export function SurveyForm() {
+  const { id } = useParams();
+  const { survey } = useSurvey(id!);
+  const [updateSurveyFormSections] = useUpdateSurveyFormSections();
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: mockFormData,
-  })
-
-  // Log form changes - will be replaced with API call later
-  const onSubmit = (data: FormData) => {
-    console.log('Form data:', data)
-  }
+    defaultValues: {
+      sections: survey?.form?.sections ?? [{
+        id: crypto.randomUUID(),
+        title: "Section 1",
+        description: "Section 1 description",
+        fields: [generateField(SurveyFieldTypeEnum.TextQuestion)]
+      }]
+    },
+  });
 
   const sectionsFieldArray = useFieldArray({
     control: form.control,
     name: "sections",
+  });
+
+  // Add state to track if form is submitting
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { isDirty } = useFormState({
+    control: form.control
   })
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      setIsSubmitting(true)
+      await updateSurveyFormSections({
+        variables: {
+          input: {
+            surveyId: id,
+            sections: data.sections.map(section => ({
+              id: section.id,
+              title: section.title,
+              description: section.description || "",
+              fields: section.fields
+            }))
+          }
+        }
+      })
+      form.reset(data)
+    } catch (error) {
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination, type } = result
@@ -137,10 +136,29 @@ export function SurveyForm() {
       }
     }
   }
+
+  useEffect(() => {
+    if (isDirty) {
+      toast.message("You have unsaved changes", {
+        duration: Infinity,
+        action: {
+          label: "Save changes",
+          onClick: () => onSubmit(form.getValues()),
+        },
+        cancel: {
+          label: "Discard",
+          onClick: () => form.reset(),
+        },
+      })
+    } else {
+      toast.dismiss()
+    }
+  }, [isDirty])
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-6">
+        <form onSubmit={form.handleSubmit(() => { })} className="space-y-6 pt-6">
           <div className="flex flex-col gap-3">
             <Droppable droppableId="topics" type="topic">
               {(provided) => {

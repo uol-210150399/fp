@@ -62,7 +62,7 @@ export function TeamSwitcher({ teamId, projectId }: TeamSwitcherProps) {
 
   const handleProjectSelect = (team: Team, project: Project) => {
     setOpenProject(false);
-    navigate(`/${team.slug}/${project.id}`);
+    navigate(`/${team.slug}/${project.id}/surveys`);
   };
 
   const TeamPopoverContent = () => (

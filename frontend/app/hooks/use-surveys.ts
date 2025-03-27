@@ -16,6 +16,19 @@ export const GET_SURVEYS = gql`
             projectId
             status
             key
+            form {
+                id
+                sections {
+                  id
+                  title
+                  description
+                  fields
+                  order
+                }
+                context
+                welcomeMessage
+                updatedAt
+            }
             isDeleted
             createdAt
             updatedAt

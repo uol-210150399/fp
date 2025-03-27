@@ -13,22 +13,32 @@ import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { BreadcrumbList } from "@/components/ui/breadcrumb";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SurveyForm } from "./components/survey-form";
+import { usePublishSurvey } from "@/hooks/use-survey-mutations"
+import { Link } from "@remix-run/react";
+import { useProject, useTeam } from "@/hooks/use-teams";
+import { useAuth, useClerk, useSignIn } from "@clerk/clerk-react";
+import { useEffect } from "react";
+import { useNavigate } from "@remix-run/react";
 
 export const clientLoader = async ({ params }: ClientLoaderFunctionArgs) => {
   const { id } = params;
-  return { id };
+  return { id, teamId: params.team, projectId: params.project };
 };
 
 export default function SurveyDetail() {
-  const { id } = useLoaderData<typeof clientLoader>();
+  const { id, teamId, projectId } = useLoaderData<typeof clientLoader>();
   const { survey, loading, error } = useSurvey(id!);
+  const [publishSurvey, { loading: isPublishing }] = usePublishSurvey();
+
+  const { team } = useTeam(teamId!);
+  const { project } = useProject(teamId!, projectId!);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("t") ?? "questions";
@@ -59,6 +69,26 @@ export default function SurveyDetail() {
       })),
     [activeTab]
   )
+
+  const handlePublish = async () => {
+    await publishSurvey({
+      variables: {
+        input: {
+          id: id
+        }
+      }
+    })
+  }
+
+  const { isLoaded, isSignedIn, } = useAuth();
+  const navigate = useNavigate();
+  const clerk = useClerk()
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      clerk.redirectToSignIn()
+    }
+  }, [isLoaded, isSignedIn, navigate]);
 
   if (loading) return null;
   if (error) return <div>Error: {error.message}</div>;
@@ -99,9 +129,16 @@ export default function SurveyDetail() {
             </DropdownMenu>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button>Save</Button>
+                <Button
+                  onClick={handlePublish}
+                  disabled={isPublishing}
+                >
+                  {isPublishing ? "Publishing..." : "Publish changes"}
+                </Button>
               </TooltipTrigger>
-              <TooltipContent>Save changes</TooltipContent>
+              <TooltipContent>
+                Updates the published version of the survey
+              </TooltipContent>
             </Tooltip>
           </div>
         </div>
@@ -119,7 +156,27 @@ export default function SurveyDetail() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Surveys</BreadcrumbPage>
+                  <BreadcrumbLink asChild>
+                    <Link to="/">Teams</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to={`/${team?.slug}`}>{team?.name}</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to={`/${team?.slug}/${project?.id}`}>{project?.name}</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to={`/${team?.slug}/${project?.id}/surveys`}>Surveys</Link>
+                  </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>

@@ -1,83 +1,44 @@
-import { Fragment, useState } from "react"
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Fragment } from "react"
 import {
-  Form,
+  FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { cn } from "@/lib/utils"
+import { QuestionBody } from "./question-body"
 
 interface TextQuestionProps {
-  fieldPath: string  // e.g. "sections.0.fields.0"
-  control: any // form control from parent
+  disabled?: boolean
+  fieldFormKey: string
 }
 
-export const TextQuestion = ({ fieldPath, control }: TextQuestionProps) => {
-  const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(false)
-
+export const TextQuestion = ({
+  disabled,
+  fieldFormKey,
+}: TextQuestionProps) => {
   return (
-    <div className="flex flex-col gap-5">
-      {/* Main Question Display */}
-      <div className="space-y-3">
-        <div className="flex flex-col text-start">
-          <span className="text-sm font-semibold">Text Question</span>
-          <span className="text-[13px] text-gray-600">
-            Configure your text question
-          </span>
-        </div>
-
-        {/* Question Text */}
+    <QuestionBody
+      disabled={disabled}
+      settingsElement={
         <FormField
-          control={control}
-          name={`${fieldPath}.text`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Question Text</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Enter your question" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        {/* Preview */}
-        <div className="flex flex-col gap-2">
-          <Textarea
-            placeholder="Type your answer here..."
-            className="min-h-[100px] resize-none bg-background"
-            disabled
-          />
-        </div>
-      </div>
-
-      {/* Basic Settings */}
-      <div className="space-y-5">
-        <FormField
-          control={control}
-          name={`${fieldPath}.required`}
+          disabled={disabled}
+          name={`${fieldFormKey}.required`}
+          defaultValue={true}
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between">
               <div className="space-y-0.5 text-start">
                 <FormLabel>Required</FormLabel>
                 <FormDescription>
-                  Requires the respondent to answer this question
+                  Requires the respondent to answer the question.
                 </FormDescription>
               </div>
               <FormControl>
                 <Switch
+                  disabled={field?.disabled}
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
@@ -85,56 +46,56 @@ export const TextQuestion = ({ fieldPath, control }: TextQuestionProps) => {
             </FormItem>
           )}
         />
-      </div>
-
-      {/* Advanced Settings */}
-      <Collapsible
-        open={advancedSettingsOpen}
-        onOpenChange={setAdvancedSettingsOpen}
-        className="space-y-3"
-      >
-        <div className="flex items-center">
-          <CollapsibleTrigger>
-            <Button
-              type="button"
-              variant="link"
-              className={cn(
-                "rounded text-zinc-600 !no-underline font-medium text-sm px-3",
-                advancedSettingsOpen && "bg-zinc-100"
-              )}
-            >
-              Advanced settings
-              {advancedSettingsOpen ? (
-                <ChevronUpIcon className="ml-1.5 size-4" />
-              ) : (
-                <ChevronDownIcon className="ml-1.5 size-4" />
-              )}
-            </Button>
-          </CollapsibleTrigger>
-        </div>
-
-        <CollapsibleContent className="space-y-4 p-0.5">
+      }
+      advancedSettingsElement={
+        <Fragment>
           <FormField
-            control={control}
-            name={`${fieldPath}.description`}
+            disabled={disabled}
+            name={`${fieldFormKey}.description`}
+            defaultValue=""
             render={({ field }) => (
               <FormItem className="flex-1 text-start">
                 <FormLabel>Description</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
-                    placeholder="Add description here..."
+                    placeholder="Add description here"
+                    className="placeholder:text-zinc-400"
                   />
                 </FormControl>
                 <FormDescription>
-                  Additional context or instructions for the respondent
+                  This can be used to provide an example answer to the
+                  respondents. The description appears below the question on the
+                  respondent's screen.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </CollapsibleContent>
-      </Collapsible>
-    </div>
+          <FormField
+            disabled={disabled}
+            name={`${fieldFormKey}.instructions`}
+            defaultValue=""
+            render={({ field }) => (
+              <FormItem className="flex-1 text-start">
+                <FormLabel>Instructions</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="Add instructions here"
+                    className="placeholder:text-zinc-400"
+                  />
+                </FormControl>
+                <FormDescription>
+                  The instructions guide scouting on how to get the best answer
+                  from the respondent.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </Fragment>
+      }
+    />
   )
-} 
+}

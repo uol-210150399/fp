@@ -1,17 +1,19 @@
-import { ClientLoaderFunctionArgs, useLoaderData } from "@remix-run/react";
+import { ClientLoaderFunctionArgs, useLoaderData, useNavigate } from "@remix-run/react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbPage } from "@/components/ui/breadcrumb"
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { useQuery } from '@apollo/client/react/hooks/useQuery.js';
 import { GET_TEAMS } from "@/lib/team.queries";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { CreateProjectDialog } from "@/components/create-project-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Project } from "@/backend.types";
 import { ProjectsGrid } from "@/components/projects-grid";
 import { InvalidTeam } from "@/components/invalid-team";
 import { ProjectsSidebar } from "@/components/projects-sidebar";
+import { Link } from "@remix-run/react";
+import { useAuth, useClerk } from "@clerk/clerk-react";
 
 export const clientLoader = async ({ params }: ClientLoaderFunctionArgs) => {
   const { team } = params;
@@ -23,6 +25,8 @@ export const clientLoader = async ({ params }: ClientLoaderFunctionArgs) => {
 export default function TeamIndex() {
   const { team } = useLoaderData<typeof clientLoader>();
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
+  const { isLoaded, isSignedIn } = useAuth();
+  const navigate = useNavigate();
 
   const { data } = useQuery(GET_TEAMS, {
     variables: {
@@ -33,6 +37,13 @@ export default function TeamIndex() {
   const teamData = data?.teams.data.edges.find(
     (edge: { node: { slug: string } }) => edge.node.slug === team
   )?.node;
+
+  const clerk = useClerk()
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      clerk.redirectToSignIn()
+    }
+  }, [isLoaded, isSignedIn, navigate]);
 
   if (data && !teamData) {
     return <InvalidTeam />;
@@ -51,7 +62,13 @@ export default function TeamIndex() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Projects</BreadcrumbPage>
+                  <BreadcrumbLink asChild>
+                    <Link to="/">Teams</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{teamData?.name}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>

@@ -1,7 +1,7 @@
 import { gql } from 'graphql-tag';
 import { useMutation } from '@apollo/client/react/hooks/useMutation.js';
 import { toast } from 'sonner';
-import { UPDATE_SURVEY } from '@/lib/survey.queries';
+import { UPDATE_SURVEY, UPDATE_SURVEY_FORM_SECTIONS, PUBLISH_SURVEY } from '@/lib/survey.queries';
 
 const CREATE_SURVEY = gql(/* GraphQL */ `
   mutation CreateSurvey($input: SurveyCreateInput!) {
@@ -51,6 +51,48 @@ export function useUpdateSurvey() {
       }
       toast.success("Success", {
         description: "Survey updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast.error("Error", {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function useUpdateSurveyFormSections() {
+  return useMutation(UPDATE_SURVEY_FORM_SECTIONS, {
+    onCompleted: (data) => {
+      if (data?.updateSurveySectionsBulk?.error) {
+        toast.error("Error", {
+          description: data.updateSurveySectionsBulk.error.message,
+        });
+        return;
+      }
+      toast.success("Success", {
+        description: "Survey sections updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast.error("Error", {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function usePublishSurvey() {
+  return useMutation(PUBLISH_SURVEY, {
+    onCompleted: (data) => {
+      if (data.publishSurvey.error) {
+        toast.error("Error", {
+          description: data.publishSurvey.error.message,
+        });
+        return;
+      }
+      toast.success("Success", {
+        description: "Survey published successfully",
       });
     },
     onError: (error) => {

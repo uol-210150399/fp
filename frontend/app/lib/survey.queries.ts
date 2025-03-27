@@ -7,12 +7,26 @@ export const CREATE_SURVEY = gql`
         id
         title
         description
+        projectId
         status
         key
+        form {
+            id
+            sections {
+              id
+              title
+              description
+              fields
+              order
+            }
+            context
+            welcomeMessage
+            updatedAt
+        }
         isDeleted
         createdAt
         updatedAt
-      }
+     }
       error {
         message
         code
@@ -28,8 +42,22 @@ export const UPDATE_SURVEY = gql`
         id
         title
         description
+        projectId
         status
         key
+        form {
+            id
+            sections {
+            id
+            title
+            description
+            fields
+            order
+            }
+            context
+            welcomeMessage
+            updatedAt
+        }
         isDeleted
         createdAt
         updatedAt
@@ -47,6 +75,27 @@ export const DELETE_SURVEY = gql`
     deleteSurvey(id: $id) {
       data {
         id
+        title
+        description
+        projectId
+        status
+        key
+        form {
+            id
+            sections {
+            id
+            title
+            description
+            fields
+            order
+            }
+            context
+            welcomeMessage
+            updatedAt
+        }
+        isDeleted
+        createdAt
+        updatedAt
       }
       error {
         message
@@ -82,104 +131,56 @@ export const GET_SURVEY = gql`
         status
         key
         form {
-          id
-          sections {
+            id
+            sections {
             id
             title
             description
-            fields {
-              ... on TextQuestion {
-                id
-                text
-                description
-                required
-                type
-                order
-              }
-              ... on MultipleChoiceQuestion {
-                id
-                text
-                description
-                required
-                choices
-                allowMultiple
-                allowOther
-                randomize
-                type
-                order
-              }
-              ... on RatingQuestion {
-                id
-                text
-                description
-                required
-                labels
-                steps
-                startAtOne
-                type
-                order
-              }
-              ... on RankingQuestion {
-                id
-                text
-                description
-                required
-                choices
-                randomize
-                type
-                order
-              }
-              ... on MatrixQuestion {
-                id
-                text
-                description
-                required
-                rows
-                columns
-                allowMultiplePerRow
-                type
-                order
-              }
-              ... on NumberQuestion {
-                id
-                text
-                description
-                required
-                min
-                max
-                allowDecimals
-                unitLabel
-                type
-                order
-              }
-              ... on StatementField {
-                id
-                text
-                buttonText
-                textSize
-                type
-                order
-              }
-              ... on Checkpoint {
-                id
-                title
-                condition
-                target {
-                  type
-                  value
-                }
-                type
-                order
-              }
-            }
+            fields
             order
-          }
-          context
-          updatedAt
+            }
+            context
+            welcomeMessage
+            updatedAt
         }
         isDeleted
         createdAt
         updatedAt
+      }
+      error {
+        message
+        code
+      }
+    }
+  }
+`;
+
+export const UPDATE_SURVEY_FORM_SECTIONS = gql`
+  mutation UpdateSurveySectionsBulk($input: SurveySectionBulkCreateInput!) {
+    updateSurveySectionsBulk(input: $input) {
+      data {
+          id
+          title
+          description
+          projectId
+          status
+          key
+          form {
+              id
+              sections {
+              id
+              title
+              description
+              fields
+              order
+              }
+              context
+              welcomeMessage
+              updatedAt
+          }
+          isDeleted
+          createdAt
+          updatedAt
       }
       error {
         message

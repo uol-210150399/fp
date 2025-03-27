@@ -16,7 +16,6 @@ interface QuestionBodyProps {
   mainElementDescription?: string
   settingsElement?: React.ReactNode
   advancedSettingsElement?: React.ReactNode
-  questionFormKey: string
   disabled?: boolean
 }
 
@@ -26,8 +25,6 @@ export const QuestionBody = ({
   mainElementDescription,
   settingsElement,
   advancedSettingsElement,
-  questionFormKey,
-  disabled,
 }: QuestionBodyProps) => {
   const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(true)
 
