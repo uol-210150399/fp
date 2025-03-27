@@ -7,6 +7,7 @@ import {
   ErrorCode,
   PaginationInput,
   SurveyResponse,
+  SurveySession,
   SurveysFilterInput,
   SurveysResponse,
   SurveyStatus,
@@ -14,6 +15,7 @@ import {
 import { SurveyNotFoundException, SurveyPermissionDeniedException } from '../exceptions/survey.exceptions';
 import { SurveyDTOMapper } from '../dtos/survey-dto-mapper';
 import { SurveySessionEntity } from '../model/survey-response.entity';
+import { SurveyResponseDTOMapper } from '../dtos/survey-response-dto-mapper';
 
 @Resolver('Query')
 @UseGuards(AuthGuard)
@@ -99,11 +101,13 @@ export class SurveyQueryResolver {
   async listSurveyRespondents(
     @Args('surveyId') surveyId: string,
     @CurrentUser() userId: string,
-  ): Promise<SurveySessionEntity[]> {
+  ): Promise<SurveySession[]> {
     try {
-      return this.surveyService.listSurveyRespondents(surveyId, userId);
+      const sessions = await this.surveyService.listSurveyRespondents(surveyId, userId);
+      return sessions.map(session => SurveyResponseDTOMapper.toGraphQL(session));
     } catch (error) {
       throw error;
     }
   }
+
 } 

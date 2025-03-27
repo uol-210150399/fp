@@ -10,11 +10,14 @@ import {
   SurveyFormOperationInput,
   SurveySectionBulkCreateInput,
   SurveyPublishInput,
+  InviteRespondentInput,
+  SurveySession,
 } from '../../generated/graphql';
 import { SurveyDTOMapper } from '../dtos/survey-dto-mapper';
 import { SurveyService } from '../survey.service';
 import { SurveyFormOperationService } from '../services/survey-form-operation.service';
 import { SurveyNotFoundException, SurveyPermissionDeniedException, SurveyValidationException } from '../exceptions/survey.exceptions';
+import { SurveyResponseDTOMapper } from '../dtos/survey-response-dto-mapper';
 
 @Resolver()
 @UseGuards(AuthGuard)
@@ -175,30 +178,10 @@ export class SurveyMutationResolver {
 
   @Mutation()
   async inviteRespondent(
-    @Args('input') input: { surveyId: string; email: string; name?: string; role?: string },
+    @Args('input') input: InviteRespondentInput,
     @CurrentUser() userId: string,
-  ): Promise<{ data: any; error: { message: string; code: ErrorCode } | null }> {
-    try {
-      const session = await this.surveyService.inviteRespondent(input, userId);
-
-      return {
-        data: session,
-        error: null,
-      };
-    } catch (error) {
-      return {
-        data: null,
-        error: {
-          message: error.message,
-          code: error instanceof SurveyNotFoundException
-            ? ErrorCode.NOT_FOUND
-            : error instanceof SurveyPermissionDeniedException
-              ? ErrorCode.FORBIDDEN
-              : error instanceof SurveyValidationException
-                ? ErrorCode.VALIDATION_ERROR
-                : ErrorCode.INTERNAL_ERROR,
-        },
-      };
-    }
+  ): Promise<SurveySession> {
+    const survey = await this.surveyService.inviteRespondent(input, userId);
+    return SurveyResponseDTOMapper.toGraphQL(survey);
   }
 } 
