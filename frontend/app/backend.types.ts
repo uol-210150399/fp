@@ -6,7 +6,6 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: 
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -26,7 +25,6 @@ export type Checkpoint = {
   id: Scalars['ID']['output'];
   order: Scalars['Int']['output'];
   target: CheckpointTarget;
-  title: Scalars['String']['output'];
   type: SurveyFieldTypeEnum;
 };
 
@@ -34,6 +32,12 @@ export type CheckpointTarget = {
   __typename?: 'CheckpointTarget';
   type: TargetType;
   value?: Maybe<Scalars['String']['output']>;
+};
+
+export type Choice = {
+  __typename?: 'Choice';
+  id: Scalars['ID']['output'];
+  text: Scalars['String']['output'];
 };
 
 export type Connection = {
@@ -61,6 +65,13 @@ export enum ErrorCode {
   VALIDATION_ERROR = 'VALIDATION_ERROR'
 }
 
+export type InviteRespondentInput = {
+  email: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  role?: InputMaybe<Scalars['String']['input']>;
+  surveyId: Scalars['ID']['input'];
+};
+
 export type MatrixQuestion = {
   __typename?: 'MatrixQuestion';
   allowMultiplePerRow: Scalars['Boolean']['output'];
@@ -77,8 +88,7 @@ export type MatrixQuestion = {
 export type MultipleChoiceQuestion = {
   __typename?: 'MultipleChoiceQuestion';
   allowMultiple?: Maybe<Scalars['Boolean']['output']>;
-  allowOther?: Maybe<Scalars['Boolean']['output']>;
-  choices: Array<Scalars['String']['output']>;
+  choices: Array<Choice>;
   description?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   order: Scalars['Int']['output'];
@@ -102,12 +112,14 @@ export type Mutation = {
   deleteSurvey: SurveyResponse;
   deleteTeam: TeamResponse;
   deleteTeamMember: TeamMemberResponse;
+  inviteRespondent: SurveySessionResponse;
   publishSurvey: SurveyResponse;
   startSurveySession: StartSurveySessionResponse;
   submitSurveySessionAnswer: SubmitSurveySessionAnswerResponse;
   updateProject: ProjectResponse;
   updateSurvey: SurveyResponse;
   updateSurveyForm: SurveyFormOperationResponse;
+  updateSurveySectionsBulk: SurveyResponse;
   updateTeam: TeamResponse;
   updateTeamMember: TeamMemberResponse;
 };
@@ -153,6 +165,11 @@ export type MutationdeleteTeamMemberArgs = {
 };
 
 
+export type MutationinviteRespondentArgs = {
+  input: InviteRespondentInput;
+};
+
+
 export type MutationpublishSurveyArgs = {
   input: SurveyPublishInput;
 };
@@ -183,6 +200,11 @@ export type MutationupdateSurveyFormArgs = {
 };
 
 
+export type MutationupdateSurveySectionsBulkArgs = {
+  input: SurveySectionBulkCreateInput;
+};
+
+
 export type MutationupdateTeamArgs = {
   input: TeamUpdateInput;
 };
@@ -199,7 +221,6 @@ export type Node = {
 
 export type NumberQuestion = {
   __typename?: 'NumberQuestion';
-  allowDecimals: Scalars['Boolean']['output'];
   description?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   max?: Maybe<Scalars['Float']['output']>;
@@ -208,7 +229,7 @@ export type NumberQuestion = {
   required: Scalars['Boolean']['output'];
   text: Scalars['String']['output'];
   type: SurveyFieldTypeEnum;
-  unitLabel?: Maybe<Scalars['String']['output']>;
+  unit?: Maybe<Scalars['String']['output']>;
 };
 
 export type PageInfo = {
@@ -280,6 +301,7 @@ export type ProjectsResponse = {
 
 export type Query = {
   __typename?: 'Query';
+  listSurveyRespondents: Array<SurveySession>;
   /** Project Operations */
   project: ProjectResponse;
   projects: ProjectsResponse;
@@ -289,6 +311,13 @@ export type Query = {
   /** Team Operations */
   team: TeamResponse;
   teams: TeamsResponse;
+  /** User Operations */
+  users: UsersResponse;
+};
+
+
+export type QuerylistSurveyRespondentsArgs = {
+  surveyId: Scalars['ID']['input'];
 };
 
 
@@ -323,9 +352,15 @@ export type QueryteamsArgs = {
   pagination?: InputMaybe<PaginationInput>;
 };
 
+
+export type QueryusersArgs = {
+  filter?: InputMaybe<UsersFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+};
+
 export type RankingQuestion = {
   __typename?: 'RankingQuestion';
-  choices: Array<Scalars['String']['output']>;
+  choices: Array<Choice>;
   description?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   order: Scalars['Int']['output'];
@@ -348,16 +383,31 @@ export type RatingQuestion = {
   type: SurveyFieldTypeEnum;
 };
 
+export type RespondentData = {
+  __typename?: 'RespondentData';
+  email?: Maybe<Scalars['String']['output']>;
+  ip?: Maybe<Scalars['String']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  role?: Maybe<Scalars['String']['output']>;
+};
+
+export enum SessionStatus {
+  COMPLETED = 'COMPLETED',
+  ENDED = 'ENDED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  STARTED = 'STARTED'
+}
+
 export type StartSurveySessionInput = {
+  sessionId?: InputMaybe<Scalars['String']['input']>;
   surveyKey: Scalars['String']['input'];
 };
 
-/** Survey Session Outputs */
 export type StartSurveySessionResponse = {
   __typename?: 'StartSurveySessionResponse';
   error?: Maybe<Error>;
-  metadata?: Maybe<SurveySessionResponseMetadata>;
-  questions?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
+  nextQuestion?: Maybe<Scalars['JSON']['output']>;
+  status: SessionStatus;
 };
 
 export type StatementField = {
@@ -371,19 +421,20 @@ export type StatementField = {
 };
 
 export type SubmitSurveySessionAnswerInput = {
-  answer: SurveySessionAnswerInput;
+  answer: Scalars['JSON']['input'];
+  questionId: Scalars['ID']['input'];
   sessionId: Scalars['ID']['input'];
 };
 
 export type SubmitSurveySessionAnswerResponse = {
   __typename?: 'SubmitSurveySessionAnswerResponse';
   error?: Maybe<Error>;
-  nextQuestions?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
+  metadata?: Maybe<Scalars['JSON']['output']>;
+  nextQuestion?: Maybe<Scalars['JSON']['output']>;
 };
 
 export type Survey = Node & {
   __typename?: 'Survey';
-  context?: Maybe<Scalars['JSON']['output']>;
   createdAt: Scalars['Date']['output'];
   description?: Maybe<Scalars['String']['output']>;
   form?: Maybe<SurveyForm>;
@@ -417,12 +468,9 @@ export type SurveyEdge = Edge & {
 
 export type SurveyFieldResponse = {
   __typename?: 'SurveyFieldResponse';
-  data?: Maybe<SurveyFieldType>;
+  data?: Maybe<Scalars['JSON']['output']>;
   error?: Maybe<Error>;
 };
-
-/** Union Types */
-export type SurveyFieldType = Checkpoint | MatrixQuestion | MultipleChoiceQuestion | NumberQuestion | RankingQuestion | RatingQuestion | StatementField | TextQuestion;
 
 export enum SurveyFieldTypeEnum {
   Checkpoint = 'Checkpoint',
@@ -437,10 +485,11 @@ export enum SurveyFieldTypeEnum {
 
 export type SurveyForm = {
   __typename?: 'SurveyForm';
-  context?: Maybe<Scalars['JSON']['output']>;
+  context?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   sections: Array<SurveySection>;
   updatedAt?: Maybe<Scalars['Date']['output']>;
+  welcomeMessage?: Maybe<Scalars['String']['output']>;
 };
 
 /** Generic Form Operation Input */
@@ -450,7 +499,7 @@ export type SurveyFormOperationInput = {
   operation: SurveyFormOperationType;
 };
 
-/** Form Operation Response */
+/** Generic Form Operation Response */
 export type SurveyFormOperationResponse = {
   __typename?: 'SurveyFormOperationResponse';
   data: Survey;
@@ -491,10 +540,15 @@ export type SurveyResponse = {
 export type SurveySection = {
   __typename?: 'SurveySection';
   description?: Maybe<Scalars['String']['output']>;
-  fields: Array<SurveyFieldType>;
+  fields: Array<Scalars['JSON']['output']>;
   id: Scalars['ID']['output'];
   order: Scalars['Int']['output'];
   title: Scalars['String']['output'];
+};
+
+export type SurveySectionBulkCreateInput = {
+  sections: Array<SurveySectionInput>;
+  surveyId: Scalars['ID']['input'];
 };
 
 export type SurveySectionInput = {
@@ -514,26 +568,15 @@ export type SurveySectionResponse = {
 /** Survey Session Types */
 export type SurveySession = Node & {
   __typename?: 'SurveySession';
-  answers: Array<SurveySessionAnswer>;
   completedAt?: Maybe<Scalars['Date']['output']>;
   createdAt: Scalars['Date']['output'];
   id: Scalars['ID']['output'];
   lastActivityAt: Scalars['Date']['output'];
-  publishedSurveyId: Scalars['ID']['output'];
+  respondentData: RespondentData;
   startedAt: Scalars['Date']['output'];
+  state: Scalars['JSON']['output'];
   surveyId: Scalars['ID']['output'];
-};
-
-export type SurveySessionAnswer = {
-  __typename?: 'SurveySessionAnswer';
-  questionId: Scalars['ID']['output'];
-  value: Scalars['JSON']['output'];
-};
-
-/** Survey Session Inputs */
-export type SurveySessionAnswerInput = {
-  questionId: Scalars['ID']['input'];
-  value: Scalars['JSON']['input'];
+  updatedAt: Scalars['Date']['output'];
 };
 
 export type SurveySessionConnection = Connection & {
@@ -548,9 +591,10 @@ export type SurveySessionEdge = Edge & {
   node: SurveySession;
 };
 
-export type SurveySessionResponseMetadata = {
-  __typename?: 'SurveySessionResponseMetadata';
-  sessionId: Scalars['ID']['output'];
+export type SurveySessionResponse = {
+  __typename?: 'SurveySessionResponse';
+  data?: Maybe<SurveySession>;
+  error?: Maybe<Error>;
 };
 
 export enum SurveyStatus {
@@ -578,7 +622,6 @@ export type SurveysResponse = {
 
 export enum TargetType {
   END = 'END',
-  EXTERNAL_URL = 'EXTERNAL_URL',
   SKIP_TO_QUESTION = 'SKIP_TO_QUESTION',
   SKIP_TO_SECTION = 'SKIP_TO_SECTION'
 }
@@ -704,6 +747,7 @@ export type TextQuestion = {
   __typename?: 'TextQuestion';
   description?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  instructions?: Maybe<Scalars['String']['output']>;
   order: Scalars['Int']['output'];
   required: Scalars['Boolean']['output'];
   text: Scalars['String']['output'];
@@ -716,6 +760,48 @@ export enum TextSize {
   MEDIUM = 'MEDIUM',
   SMALL = 'SMALL'
 }
+
+/** User Types */
+export type User = Node & {
+  __typename?: 'User';
+  createdAt: Scalars['Date']['output'];
+  email: Scalars['String']['output'];
+  firstName?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  imageUrl?: Maybe<Scalars['String']['output']>;
+  lastName?: Maybe<Scalars['String']['output']>;
+  updatedAt?: Maybe<Scalars['Date']['output']>;
+};
+
+export type UserConnection = Connection & {
+  __typename?: 'UserConnection';
+  edges: Array<UserEdge>;
+  pageInfo: PageInfo;
+};
+
+export type UserEdge = Edge & {
+  __typename?: 'UserEdge';
+  cursor: Scalars['String']['output'];
+  node: User;
+};
+
+/** User Operation Outputs */
+export type UserResponse = {
+  __typename?: 'UserResponse';
+  data?: Maybe<User>;
+  error?: Maybe<Error>;
+};
+
+/** User Inputs */
+export type UsersFilterInput = {
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UsersResponse = {
+  __typename?: 'UsersResponse';
+  data: UserConnection;
+  error?: Maybe<Error>;
+};
 
 
 
@@ -786,15 +872,14 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping of union types */
 export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
-  SurveyFieldType: (Checkpoint) | (MatrixQuestion) | (MultipleChoiceQuestion) | (NumberQuestion) | (RankingQuestion) | (RatingQuestion) | (StatementField) | (TextQuestion);
   SurveyQuestion: (MatrixQuestion) | (MultipleChoiceQuestion) | (NumberQuestion) | (RankingQuestion) | (RatingQuestion) | (StatementField) | (TextQuestion);
 };
 
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = {
-  Connection: (ProjectConnection) | (Omit<SurveyConnection, 'edges'> & { edges: Array<_RefType['SurveyEdge']> }) | (SurveySessionConnection) | (TeamConnection) | (TeamMemberConnection);
-  Edge: (ProjectEdge) | (Omit<SurveyEdge, 'node'> & { node: _RefType['Survey'] }) | (SurveySessionEdge) | (TeamEdge) | (TeamMemberEdge);
-  Node: (Project) | (Omit<Survey, 'form'> & { form?: Maybe<_RefType['SurveyForm']> }) | (SurveySession) | (Team) | (TeamMember);
+  Connection: (ProjectConnection) | (SurveyConnection) | (SurveySessionConnection) | (TeamConnection) | (TeamMemberConnection) | (UserConnection);
+  Edge: (ProjectEdge) | (SurveyEdge) | (SurveySessionEdge) | (TeamEdge) | (TeamMemberEdge) | (UserEdge);
+  Node: (Project) | (Survey) | (SurveySession) | (Team) | (TeamMember) | (User);
 };
 
 /** Mapping between all available schema types and the resolvers types */
@@ -802,6 +887,7 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Checkpoint: ResolverTypeWrapper<Checkpoint>;
   CheckpointTarget: ResolverTypeWrapper<CheckpointTarget>;
+  Choice: ResolverTypeWrapper<Choice>;
   Connection: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Connection']>;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
   Edge: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Edge']>;
@@ -810,6 +896,7 @@ export type ResolversTypes = {
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  InviteRespondentInput: InviteRespondentInput;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   MatrixQuestion: ResolverTypeWrapper<MatrixQuestion>;
   MultipleChoiceQuestion: ResolverTypeWrapper<MultipleChoiceQuestion>;
@@ -830,40 +917,40 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   RankingQuestion: ResolverTypeWrapper<RankingQuestion>;
   RatingQuestion: ResolverTypeWrapper<RatingQuestion>;
+  RespondentData: ResolverTypeWrapper<RespondentData>;
+  SessionStatus: SessionStatus;
   StartSurveySessionInput: StartSurveySessionInput;
   StartSurveySessionResponse: ResolverTypeWrapper<StartSurveySessionResponse>;
   StatementField: ResolverTypeWrapper<StatementField>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   SubmitSurveySessionAnswerInput: SubmitSurveySessionAnswerInput;
   SubmitSurveySessionAnswerResponse: ResolverTypeWrapper<SubmitSurveySessionAnswerResponse>;
-  Survey: ResolverTypeWrapper<Omit<Survey, 'form'> & { form?: Maybe<ResolversTypes['SurveyForm']> }>;
-  SurveyConnection: ResolverTypeWrapper<Omit<SurveyConnection, 'edges'> & { edges: Array<ResolversTypes['SurveyEdge']> }>;
+  Survey: ResolverTypeWrapper<Survey>;
+  SurveyConnection: ResolverTypeWrapper<SurveyConnection>;
   SurveyCreateInput: SurveyCreateInput;
-  SurveyEdge: ResolverTypeWrapper<Omit<SurveyEdge, 'node'> & { node: ResolversTypes['Survey'] }>;
-  SurveyFieldResponse: ResolverTypeWrapper<Omit<SurveyFieldResponse, 'data'> & { data?: Maybe<ResolversTypes['SurveyFieldType']> }>;
-  SurveyFieldType: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['SurveyFieldType']>;
+  SurveyEdge: ResolverTypeWrapper<SurveyEdge>;
+  SurveyFieldResponse: ResolverTypeWrapper<SurveyFieldResponse>;
   SurveyFieldTypeEnum: SurveyFieldTypeEnum;
-  SurveyForm: ResolverTypeWrapper<Omit<SurveyForm, 'sections'> & { sections: Array<ResolversTypes['SurveySection']> }>;
+  SurveyForm: ResolverTypeWrapper<SurveyForm>;
   SurveyFormOperationInput: SurveyFormOperationInput;
-  SurveyFormOperationResponse: ResolverTypeWrapper<Omit<SurveyFormOperationResponse, 'data'> & { data: ResolversTypes['Survey'] }>;
+  SurveyFormOperationResponse: ResolverTypeWrapper<SurveyFormOperationResponse>;
   SurveyFormOperationType: SurveyFormOperationType;
   SurveyFormUpdateInput: SurveyFormUpdateInput;
   SurveyPublishInput: SurveyPublishInput;
   SurveyQuestion: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['SurveyQuestion']>;
-  SurveyResponse: ResolverTypeWrapper<Omit<SurveyResponse, 'data'> & { data?: Maybe<ResolversTypes['Survey']> }>;
-  SurveySection: ResolverTypeWrapper<Omit<SurveySection, 'fields'> & { fields: Array<ResolversTypes['SurveyFieldType']> }>;
+  SurveyResponse: ResolverTypeWrapper<SurveyResponse>;
+  SurveySection: ResolverTypeWrapper<SurveySection>;
+  SurveySectionBulkCreateInput: SurveySectionBulkCreateInput;
   SurveySectionInput: SurveySectionInput;
-  SurveySectionResponse: ResolverTypeWrapper<Omit<SurveySectionResponse, 'data'> & { data?: Maybe<ResolversTypes['SurveySection']> }>;
+  SurveySectionResponse: ResolverTypeWrapper<SurveySectionResponse>;
   SurveySession: ResolverTypeWrapper<SurveySession>;
-  SurveySessionAnswer: ResolverTypeWrapper<SurveySessionAnswer>;
-  SurveySessionAnswerInput: SurveySessionAnswerInput;
   SurveySessionConnection: ResolverTypeWrapper<SurveySessionConnection>;
   SurveySessionEdge: ResolverTypeWrapper<SurveySessionEdge>;
-  SurveySessionResponseMetadata: ResolverTypeWrapper<SurveySessionResponseMetadata>;
+  SurveySessionResponse: ResolverTypeWrapper<SurveySessionResponse>;
   SurveyStatus: SurveyStatus;
   SurveyUpdateInput: SurveyUpdateInput;
   SurveysFilterInput: SurveysFilterInput;
-  SurveysResponse: ResolverTypeWrapper<Omit<SurveysResponse, 'data'> & { data: ResolversTypes['SurveyConnection'] }>;
+  SurveysResponse: ResolverTypeWrapper<SurveysResponse>;
   TargetType: TargetType;
   Team: ResolverTypeWrapper<Team>;
   TeamConnection: ResolverTypeWrapper<TeamConnection>;
@@ -886,6 +973,12 @@ export type ResolversTypes = {
   TextQuestion: ResolverTypeWrapper<TextQuestion>;
   TextSize: TextSize;
   UUID: ResolverTypeWrapper<Scalars['UUID']['output']>;
+  User: ResolverTypeWrapper<User>;
+  UserConnection: ResolverTypeWrapper<UserConnection>;
+  UserEdge: ResolverTypeWrapper<UserEdge>;
+  UserResponse: ResolverTypeWrapper<UserResponse>;
+  UsersFilterInput: UsersFilterInput;
+  UsersResponse: ResolverTypeWrapper<UsersResponse>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -893,6 +986,7 @@ export type ResolversParentTypes = {
   Boolean: Scalars['Boolean']['output'];
   Checkpoint: Checkpoint;
   CheckpointTarget: CheckpointTarget;
+  Choice: Choice;
   Connection: ResolversInterfaceTypes<ResolversParentTypes>['Connection'];
   Date: Scalars['Date']['output'];
   Edge: ResolversInterfaceTypes<ResolversParentTypes>['Edge'];
@@ -900,6 +994,7 @@ export type ResolversParentTypes = {
   Float: Scalars['Float']['output'];
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
+  InviteRespondentInput: InviteRespondentInput;
   JSON: Scalars['JSON']['output'];
   MatrixQuestion: MatrixQuestion;
   MultipleChoiceQuestion: MultipleChoiceQuestion;
@@ -920,37 +1015,36 @@ export type ResolversParentTypes = {
   Query: {};
   RankingQuestion: RankingQuestion;
   RatingQuestion: RatingQuestion;
+  RespondentData: RespondentData;
   StartSurveySessionInput: StartSurveySessionInput;
   StartSurveySessionResponse: StartSurveySessionResponse;
   StatementField: StatementField;
   String: Scalars['String']['output'];
   SubmitSurveySessionAnswerInput: SubmitSurveySessionAnswerInput;
   SubmitSurveySessionAnswerResponse: SubmitSurveySessionAnswerResponse;
-  Survey: Omit<Survey, 'form'> & { form?: Maybe<ResolversParentTypes['SurveyForm']> };
-  SurveyConnection: Omit<SurveyConnection, 'edges'> & { edges: Array<ResolversParentTypes['SurveyEdge']> };
+  Survey: Survey;
+  SurveyConnection: SurveyConnection;
   SurveyCreateInput: SurveyCreateInput;
-  SurveyEdge: Omit<SurveyEdge, 'node'> & { node: ResolversParentTypes['Survey'] };
-  SurveyFieldResponse: Omit<SurveyFieldResponse, 'data'> & { data?: Maybe<ResolversParentTypes['SurveyFieldType']> };
-  SurveyFieldType: ResolversUnionTypes<ResolversParentTypes>['SurveyFieldType'];
-  SurveyForm: Omit<SurveyForm, 'sections'> & { sections: Array<ResolversParentTypes['SurveySection']> };
+  SurveyEdge: SurveyEdge;
+  SurveyFieldResponse: SurveyFieldResponse;
+  SurveyForm: SurveyForm;
   SurveyFormOperationInput: SurveyFormOperationInput;
-  SurveyFormOperationResponse: Omit<SurveyFormOperationResponse, 'data'> & { data: ResolversParentTypes['Survey'] };
+  SurveyFormOperationResponse: SurveyFormOperationResponse;
   SurveyFormUpdateInput: SurveyFormUpdateInput;
   SurveyPublishInput: SurveyPublishInput;
   SurveyQuestion: ResolversUnionTypes<ResolversParentTypes>['SurveyQuestion'];
-  SurveyResponse: Omit<SurveyResponse, 'data'> & { data?: Maybe<ResolversParentTypes['Survey']> };
-  SurveySection: Omit<SurveySection, 'fields'> & { fields: Array<ResolversParentTypes['SurveyFieldType']> };
+  SurveyResponse: SurveyResponse;
+  SurveySection: SurveySection;
+  SurveySectionBulkCreateInput: SurveySectionBulkCreateInput;
   SurveySectionInput: SurveySectionInput;
-  SurveySectionResponse: Omit<SurveySectionResponse, 'data'> & { data?: Maybe<ResolversParentTypes['SurveySection']> };
+  SurveySectionResponse: SurveySectionResponse;
   SurveySession: SurveySession;
-  SurveySessionAnswer: SurveySessionAnswer;
-  SurveySessionAnswerInput: SurveySessionAnswerInput;
   SurveySessionConnection: SurveySessionConnection;
   SurveySessionEdge: SurveySessionEdge;
-  SurveySessionResponseMetadata: SurveySessionResponseMetadata;
+  SurveySessionResponse: SurveySessionResponse;
   SurveyUpdateInput: SurveyUpdateInput;
   SurveysFilterInput: SurveysFilterInput;
-  SurveysResponse: Omit<SurveysResponse, 'data'> & { data: ResolversParentTypes['SurveyConnection'] };
+  SurveysResponse: SurveysResponse;
   Team: Team;
   TeamConnection: TeamConnection;
   TeamCreateInput: TeamCreateInput;
@@ -970,6 +1064,12 @@ export type ResolversParentTypes = {
   TeamsResponse: TeamsResponse;
   TextQuestion: TextQuestion;
   UUID: Scalars['UUID']['output'];
+  User: User;
+  UserConnection: UserConnection;
+  UserEdge: UserEdge;
+  UserResponse: UserResponse;
+  UsersFilterInput: UsersFilterInput;
+  UsersResponse: UsersResponse;
 };
 
 export type CheckpointResolvers<ContextType = any, ParentType extends ResolversParentTypes['Checkpoint'] = ResolversParentTypes['Checkpoint']> = {
@@ -977,7 +1077,6 @@ export type CheckpointResolvers<ContextType = any, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   target?: Resolver<ResolversTypes['CheckpointTarget'], ParentType, ContextType>;
-  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['SurveyFieldTypeEnum'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -988,8 +1087,14 @@ export type CheckpointTargetResolvers<ContextType = any, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type ChoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Choice'] = ResolversParentTypes['Choice']> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Connection'] = ResolversParentTypes['Connection']> = {
-  __resolveType: TypeResolveFn<'ProjectConnection' | 'SurveyConnection' | 'SurveySessionConnection' | 'TeamConnection' | 'TeamMemberConnection', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'ProjectConnection' | 'SurveyConnection' | 'SurveySessionConnection' | 'TeamConnection' | 'TeamMemberConnection' | 'UserConnection', ParentType, ContextType>;
   edges?: Resolver<Array<ResolversTypes['Edge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
 };
@@ -999,7 +1104,7 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 }
 
 export type EdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Edge'] = ResolversParentTypes['Edge']> = {
-  __resolveType: TypeResolveFn<'ProjectEdge' | 'SurveyEdge' | 'SurveySessionEdge' | 'TeamEdge' | 'TeamMemberEdge', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'ProjectEdge' | 'SurveyEdge' | 'SurveySessionEdge' | 'TeamEdge' | 'TeamMemberEdge' | 'UserEdge', ParentType, ContextType>;
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Node'], ParentType, ContextType>;
 };
@@ -1029,8 +1134,7 @@ export type MatrixQuestionResolvers<ContextType = any, ParentType extends Resolv
 
 export type MultipleChoiceQuestionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MultipleChoiceQuestion'] = ResolversParentTypes['MultipleChoiceQuestion']> = {
   allowMultiple?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  allowOther?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  choices?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  choices?: Resolver<Array<ResolversTypes['Choice']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -1050,23 +1154,24 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteSurvey?: Resolver<ResolversTypes['SurveyResponse'], ParentType, ContextType, RequireFields<MutationdeleteSurveyArgs, 'id'>>;
   deleteTeam?: Resolver<ResolversTypes['TeamResponse'], ParentType, ContextType, RequireFields<MutationdeleteTeamArgs, 'input'>>;
   deleteTeamMember?: Resolver<ResolversTypes['TeamMemberResponse'], ParentType, ContextType, RequireFields<MutationdeleteTeamMemberArgs, 'input'>>;
+  inviteRespondent?: Resolver<ResolversTypes['SurveySessionResponse'], ParentType, ContextType, RequireFields<MutationinviteRespondentArgs, 'input'>>;
   publishSurvey?: Resolver<ResolversTypes['SurveyResponse'], ParentType, ContextType, RequireFields<MutationpublishSurveyArgs, 'input'>>;
   startSurveySession?: Resolver<ResolversTypes['StartSurveySessionResponse'], ParentType, ContextType, RequireFields<MutationstartSurveySessionArgs, 'input'>>;
   submitSurveySessionAnswer?: Resolver<ResolversTypes['SubmitSurveySessionAnswerResponse'], ParentType, ContextType, RequireFields<MutationsubmitSurveySessionAnswerArgs, 'input'>>;
   updateProject?: Resolver<ResolversTypes['ProjectResponse'], ParentType, ContextType, RequireFields<MutationupdateProjectArgs, 'input'>>;
   updateSurvey?: Resolver<ResolversTypes['SurveyResponse'], ParentType, ContextType, RequireFields<MutationupdateSurveyArgs, 'input'>>;
   updateSurveyForm?: Resolver<ResolversTypes['SurveyFormOperationResponse'], ParentType, ContextType, RequireFields<MutationupdateSurveyFormArgs, 'input'>>;
+  updateSurveySectionsBulk?: Resolver<ResolversTypes['SurveyResponse'], ParentType, ContextType, RequireFields<MutationupdateSurveySectionsBulkArgs, 'input'>>;
   updateTeam?: Resolver<ResolversTypes['TeamResponse'], ParentType, ContextType, RequireFields<MutationupdateTeamArgs, 'input'>>;
   updateTeamMember?: Resolver<ResolversTypes['TeamMemberResponse'], ParentType, ContextType, RequireFields<MutationupdateTeamMemberArgs, 'input'>>;
 };
 
 export type NodeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Node'] = ResolversParentTypes['Node']> = {
-  __resolveType: TypeResolveFn<'Project' | 'Survey' | 'SurveySession' | 'Team' | 'TeamMember', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Project' | 'Survey' | 'SurveySession' | 'Team' | 'TeamMember' | 'User', ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 };
 
 export type NumberQuestionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NumberQuestion'] = ResolversParentTypes['NumberQuestion']> = {
-  allowDecimals?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   max?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -1075,7 +1180,7 @@ export type NumberQuestionResolvers<ContextType = any, ParentType extends Resolv
   required?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['SurveyFieldTypeEnum'], ParentType, ContextType>;
-  unitLabel?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1120,16 +1225,18 @@ export type ProjectsResponseResolvers<ContextType = any, ParentType extends Reso
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  listSurveyRespondents?: Resolver<Array<ResolversTypes['SurveySession']>, ParentType, ContextType, RequireFields<QuerylistSurveyRespondentsArgs, 'surveyId'>>;
   project?: Resolver<ResolversTypes['ProjectResponse'], ParentType, ContextType, RequireFields<QueryprojectArgs, 'id'>>;
   projects?: Resolver<ResolversTypes['ProjectsResponse'], ParentType, ContextType, Partial<QueryprojectsArgs>>;
   survey?: Resolver<ResolversTypes['SurveyResponse'], ParentType, ContextType, RequireFields<QuerysurveyArgs, 'id'>>;
   surveys?: Resolver<ResolversTypes['SurveysResponse'], ParentType, ContextType, Partial<QuerysurveysArgs>>;
   team?: Resolver<ResolversTypes['TeamResponse'], ParentType, ContextType, RequireFields<QueryteamArgs, 'id'>>;
   teams?: Resolver<ResolversTypes['TeamsResponse'], ParentType, ContextType, Partial<QueryteamsArgs>>;
+  users?: Resolver<ResolversTypes['UsersResponse'], ParentType, ContextType, Partial<QueryusersArgs>>;
 };
 
 export type RankingQuestionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RankingQuestion'] = ResolversParentTypes['RankingQuestion']> = {
-  choices?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  choices?: Resolver<Array<ResolversTypes['Choice']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -1153,10 +1260,18 @@ export type RatingQuestionResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type RespondentDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['RespondentData'] = ResolversParentTypes['RespondentData']> = {
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ip?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  role?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type StartSurveySessionResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['StartSurveySessionResponse'] = ResolversParentTypes['StartSurveySessionResponse']> = {
   error?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType>;
-  metadata?: Resolver<Maybe<ResolversTypes['SurveySessionResponseMetadata']>, ParentType, ContextType>;
-  questions?: Resolver<Maybe<Array<Maybe<ResolversTypes['JSON']>>>, ParentType, ContextType>;
+  nextQuestion?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['SessionStatus'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1172,12 +1287,12 @@ export type StatementFieldResolvers<ContextType = any, ParentType extends Resolv
 
 export type SubmitSurveySessionAnswerResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubmitSurveySessionAnswerResponse'] = ResolversParentTypes['SubmitSurveySessionAnswerResponse']> = {
   error?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType>;
-  nextQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['JSON']>>>, ParentType, ContextType>;
+  metadata?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  nextQuestion?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type SurveyResolvers<ContextType = any, ParentType extends ResolversParentTypes['Survey'] = ResolversParentTypes['Survey']> = {
-  context?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   form?: Resolver<Maybe<ResolversTypes['SurveyForm']>, ParentType, ContextType>;
@@ -1204,20 +1319,17 @@ export type SurveyEdgeResolvers<ContextType = any, ParentType extends ResolversP
 };
 
 export type SurveyFieldResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['SurveyFieldResponse'] = ResolversParentTypes['SurveyFieldResponse']> = {
-  data?: Resolver<Maybe<ResolversTypes['SurveyFieldType']>, ParentType, ContextType>;
+  data?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   error?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type SurveyFieldTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SurveyFieldType'] = ResolversParentTypes['SurveyFieldType']> = {
-  __resolveType: TypeResolveFn<'Checkpoint' | 'MatrixQuestion' | 'MultipleChoiceQuestion' | 'NumberQuestion' | 'RankingQuestion' | 'RatingQuestion' | 'StatementField' | 'TextQuestion', ParentType, ContextType>;
-};
-
 export type SurveyFormResolvers<ContextType = any, ParentType extends ResolversParentTypes['SurveyForm'] = ResolversParentTypes['SurveyForm']> = {
-  context?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  context?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   sections?: Resolver<Array<ResolversTypes['SurveySection']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  welcomeMessage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1239,7 +1351,7 @@ export type SurveyResponseResolvers<ContextType = any, ParentType extends Resolv
 
 export type SurveySectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SurveySection'] = ResolversParentTypes['SurveySection']> = {
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  fields?: Resolver<Array<ResolversTypes['SurveyFieldType']>, ParentType, ContextType>;
+  fields?: Resolver<Array<ResolversTypes['JSON']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -1253,20 +1365,15 @@ export type SurveySectionResponseResolvers<ContextType = any, ParentType extends
 };
 
 export type SurveySessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SurveySession'] = ResolversParentTypes['SurveySession']> = {
-  answers?: Resolver<Array<ResolversTypes['SurveySessionAnswer']>, ParentType, ContextType>;
   completedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lastActivityAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  publishedSurveyId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  respondentData?: Resolver<ResolversTypes['RespondentData'], ParentType, ContextType>;
   startedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  state?: Resolver<ResolversTypes['JSON'], ParentType, ContextType>;
   surveyId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type SurveySessionAnswerResolvers<ContextType = any, ParentType extends ResolversParentTypes['SurveySessionAnswer'] = ResolversParentTypes['SurveySessionAnswer']> = {
-  questionId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  value?: Resolver<ResolversTypes['JSON'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1282,8 +1389,9 @@ export type SurveySessionEdgeResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type SurveySessionResponseMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['SurveySessionResponseMetadata'] = ResolversParentTypes['SurveySessionResponseMetadata']> = {
-  sessionId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+export type SurveySessionResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['SurveySessionResponse'] = ResolversParentTypes['SurveySessionResponse']> = {
+  data?: Resolver<Maybe<ResolversTypes['SurveySession']>, ParentType, ContextType>;
+  error?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1367,6 +1475,7 @@ export type TeamsResponseResolvers<ContextType = any, ParentType extends Resolve
 export type TextQuestionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TextQuestion'] = ResolversParentTypes['TextQuestion']> = {
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  instructions?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   required?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -1378,9 +1487,45 @@ export interface UUIDScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'UUID';
 }
 
+export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  firstName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  imageUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lastName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserConnection'] = ResolversParentTypes['UserConnection']> = {
+  edges?: Resolver<Array<ResolversTypes['UserEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserEdge'] = ResolversParentTypes['UserEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserResponse'] = ResolversParentTypes['UserResponse']> = {
+  data?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  error?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UsersResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersResponse'] = ResolversParentTypes['UsersResponse']> = {
+  data?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType>;
+  error?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   Checkpoint?: CheckpointResolvers<ContextType>;
   CheckpointTarget?: CheckpointTargetResolvers<ContextType>;
+  Choice?: ChoiceResolvers<ContextType>;
   Connection?: ConnectionResolvers<ContextType>;
   Date?: GraphQLScalarType;
   Edge?: EdgeResolvers<ContextType>;
@@ -1400,6 +1545,7 @@ export type Resolvers<ContextType = any> = {
   Query?: QueryResolvers<ContextType>;
   RankingQuestion?: RankingQuestionResolvers<ContextType>;
   RatingQuestion?: RatingQuestionResolvers<ContextType>;
+  RespondentData?: RespondentDataResolvers<ContextType>;
   StartSurveySessionResponse?: StartSurveySessionResponseResolvers<ContextType>;
   StatementField?: StatementFieldResolvers<ContextType>;
   SubmitSurveySessionAnswerResponse?: SubmitSurveySessionAnswerResponseResolvers<ContextType>;
@@ -1407,7 +1553,6 @@ export type Resolvers<ContextType = any> = {
   SurveyConnection?: SurveyConnectionResolvers<ContextType>;
   SurveyEdge?: SurveyEdgeResolvers<ContextType>;
   SurveyFieldResponse?: SurveyFieldResponseResolvers<ContextType>;
-  SurveyFieldType?: SurveyFieldTypeResolvers<ContextType>;
   SurveyForm?: SurveyFormResolvers<ContextType>;
   SurveyFormOperationResponse?: SurveyFormOperationResponseResolvers<ContextType>;
   SurveyQuestion?: SurveyQuestionResolvers<ContextType>;
@@ -1415,10 +1560,9 @@ export type Resolvers<ContextType = any> = {
   SurveySection?: SurveySectionResolvers<ContextType>;
   SurveySectionResponse?: SurveySectionResponseResolvers<ContextType>;
   SurveySession?: SurveySessionResolvers<ContextType>;
-  SurveySessionAnswer?: SurveySessionAnswerResolvers<ContextType>;
   SurveySessionConnection?: SurveySessionConnectionResolvers<ContextType>;
   SurveySessionEdge?: SurveySessionEdgeResolvers<ContextType>;
-  SurveySessionResponseMetadata?: SurveySessionResponseMetadataResolvers<ContextType>;
+  SurveySessionResponse?: SurveySessionResponseResolvers<ContextType>;
   SurveysResponse?: SurveysResponseResolvers<ContextType>;
   Team?: TeamResolvers<ContextType>;
   TeamConnection?: TeamConnectionResolvers<ContextType>;
@@ -1432,5 +1576,10 @@ export type Resolvers<ContextType = any> = {
   TeamsResponse?: TeamsResponseResolvers<ContextType>;
   TextQuestion?: TextQuestionResolvers<ContextType>;
   UUID?: GraphQLScalarType;
+  User?: UserResolvers<ContextType>;
+  UserConnection?: UserConnectionResolvers<ContextType>;
+  UserEdge?: UserEdgeResolvers<ContextType>;
+  UserResponse?: UserResponseResolvers<ContextType>;
+  UsersResponse?: UsersResponseResolvers<ContextType>;
 };
 

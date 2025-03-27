@@ -71,11 +71,10 @@ export const UPDATE_TEAM = gql`
 `;
 
 export const ADD_TEAM_MEMBER = gql`
-  mutation AddTeamMember($input: TeamMemberCreateInput!) {
-    addTeamMember(input: $input) {
+  mutation CreateTeamMember($input: TeamMemberCreateInput!) {
+    createTeamMember(input: $input) {
       data {
         id
-        email
         role
       }
       error {
