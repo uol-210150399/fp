@@ -39,7 +39,16 @@ export class SurveyResponseService {
     if (input.sessionId) {
       const session = await this.responseRepository.findOne({
         where: { id: input.sessionId },
+        relations: ['survey', 'publishedSurvey'],
       });
+
+      if (session.completedAt) {
+        return {
+          nextQuestion: null,
+          status: SessionStatus.COMPLETED,
+          session,
+        }
+      }
 
       if (!session) {
         throw new SurveyValidationException('Session not found');
@@ -87,7 +96,7 @@ export class SurveyResponseService {
     });
 
     const savedResponse = await this.responseRepository.save(response);
-    const { nextQuestion, status } = await this.sessionManager.getNextQuestion(savedResponse.id);
+    const { nextQuestion, status } = await this.sessionManager.getNextQuestion(savedResponse.id, true);
     return {
       nextQuestion,
       status,
@@ -98,16 +107,18 @@ export class SurveyResponseService {
   async submitSurveySessionAnswer(input: SubmitSurveySessionAnswerInput): Promise<{
     nextQuestion: any,
     status: SessionStatus,
+    session: SurveySessionEntity,
   }> {
     const session = await this.getSurveySession(input.sessionId);
     if (!session) {
       throw new SurveyValidationException('Session not found');
     }
 
-    const { nextQuestion, status } = await this.sessionManager.generateNextQuestion(input);
+    const { nextQuestion, status, session: updatedSession } = await this.sessionManager.generateNextQuestion(input);
     return {
       nextQuestion,
       status,
+      session: updatedSession,
     };
   }
 

@@ -1,0 +1,31 @@
+{
+  "question": "Building on your experience with early public bug bounty programs at companies like PayPal, could you share some key lessons or challenges you encountered that have shaped your approach to product security and management?",
+  "follow_ups": [
+    {
+      "timestamp": "2025-03-27T08:00:08.516Z",
+      "generator": "CONCERN",
+      "model": "o3-mini",
+      "inputs": {
+        "question": "Building on your experience with early public bug bounty programs at companies like PayPal, could you share some key lessons or challenges you encountered that have shaped your approach to product security and management?",
+        "instructions": "",
+        "concernType": "REFUSAL",
+        "conversationHistory": [
+          {
+            "role": "assistant",
+            "content": "Can you please share your background and your role at your current organization?"
+          },
+          {
+            "role": "respondent",
+            "content": "\"My current role is a Senior Manager of Product Management. My background is in engineering and product management with a focus on security. I spent several years working in security-related roles at Magento, an e-commerce company acquired by PayPal, eBay, and later by Adobe. At those companies, I worked directly on crowdsourced security. PayPal was one of the very first companies to have a public bug bounty program.\""
+          }
+        ]
+      },
+      "result": {
+        "questions": [
+          "Reflecting on your early experiences with public bug bounty programs, what were some of the most notable security challenges you observed, and how have those experiences subtly influenced your current approach to product security?",
+          "Considering your role at PayPal during the early days of public bug bounty programs, could you pinpoint two or three key lessons from that period that directly inform your product security and management strategies today?"
+        ]
+      }
+    }
+  ]
+}

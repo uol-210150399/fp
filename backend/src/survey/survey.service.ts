@@ -342,7 +342,9 @@ export class SurveyService {
         surveyId: survey.surveyId,
         formSnapshot: SurveyFormDTOMapper.toGraphQL(survey.form),
         publishedById: teamMembership.id,
-        version: previousPublishedSurvey ? previousPublishedSurvey.version + 1 : 1
+        version: previousPublishedSurvey ? previousPublishedSurvey.version + 1 : 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
       await manager.save(PublishedSurveyEntity, publishedSurvey);

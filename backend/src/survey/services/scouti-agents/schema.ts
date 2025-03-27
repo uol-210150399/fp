@@ -8,19 +8,18 @@ export enum QualityEnumValues {
 }
 export const ConcernEnum = z.enum([
   'NONE',
-  'REPETITIVE',
-  'REFUSAL',
   'CONFIDENTIAL',
   'COMPLEX',
-  'CLARIFICATION'
+  'CLARITY',
+  'REFUSAL',
 ]);
+
 export enum ConcernEnumValues {
   NONE = 'NONE',
-  REPETITIVE = 'REPETITIVE',
-  REFUSAL = 'REFUSAL',
   CONFIDENTIAL = 'CONFIDENTIAL',
   COMPLEX = 'COMPLEX',
-  CLARIFICATION = 'CLARIFICATION',
+  CLARITY = 'CLARITY',
+  REFUSAL = 'REFUSAL',
 }
 export const RepetitionEnum = z.enum(['NEEDED', 'NOT_NEEDED']);
 export enum RepetitionEnumValues {

@@ -1,0 +1,32 @@
+{
+  "question": "Given your extensive experience with crowdsourced security initiatives at Magento, PayPal, and Adobe, how have the challenges or lessons learned from managing public bug bounty programs influenced your strategy and decision-making in your current role as Senior Manager of Product Management?",
+  "follow_ups": [
+    {
+      "timestamp": "2025-03-27T07:57:46.321Z",
+      "generator": "CONCERN",
+      "model": "o3-mini",
+      "inputs": {
+        "question": "Given your extensive experience with crowdsourced security initiatives at Magento, PayPal, and Adobe, how have the challenges or lessons learned from managing public bug bounty programs influenced your strategy and decision-making in your current role as Senior Manager of Product Management?",
+        "instructions": "",
+        "concernType": "REFUSAL",
+        "conversationHistory": [
+          {
+            "role": "assistant",
+            "content": "Can you please share your background and your role at your current organization?"
+          },
+          {
+            "role": "respondent",
+            "content": "\"My current role is a Senior Manager of Product Management. My background is in engineering and product management with a focus on security. I spent several years working in security-related roles at Magento, an e-commerce company acquired by PayPal, eBay, and later by Adobe. At those companies, I worked directly on crowdsourced security. PayPal was one of the very first companies to have a public bug bounty program.\""
+          }
+        ]
+      },
+      "result": {
+        "questions": [
+          "How have your past experiences with crowdsourced security, particularly through public bug bounty programs at companies like Magento, PayPal, and Adobe, influenced the way you approach product management today?",
+          "Can you discuss a specific instance where challenges from managing public bug bounty programs helped shape a decision or strategy in your current role?",
+          "In your current position as Senior Manager of Product Management, have you observed measurable changes—such as a 20-30% adjustment in risk management priorities—derived from your experience with crowdsourced security initiatives?"
+        ]
+      }
+    }
+  ]
+}

@@ -42,4 +42,11 @@ export class ClerkService {
   async getUser(userId: string) {
     return this.clerk.users.getUser(userId);
   }
+
+  async getUsers(search?: string) {
+    return this.clerk.users.getUserList({
+      query: search,
+      limit: 1000,
+    });
+  }
 } 

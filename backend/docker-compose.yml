@@ -5,9 +5,9 @@ services:
     image: postgres
     restart: always
     ports:
-      - "127.0.0.1:5436:5432"
+      - '127.0.0.1:5436:5432'
     environment:
       POSTGRES_USER: scouti
       POSTGRES_PASSWORD: scouti1
       POSTGRES_DB: scoutidb
-      DEBUG_SQL: "true"
+      DEBUG_SQL: 'true'

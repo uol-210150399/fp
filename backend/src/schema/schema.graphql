@@ -26,6 +26,11 @@ type Query {
     pagination: PaginationInput
     filter: SurveysFilterInput
   ): SurveysResponse!
+
+  """
+  User Operations
+  """
+  users(pagination: PaginationInput, filter: UsersFilterInput): UsersResponse!
 }
 
 type Mutation {

@@ -290,9 +290,10 @@ type SurveySession implements Node {
 }
 
 type RespondentData {
-  email: String!
+  email: String
   name: String
   role: String
+  ip: String
 }
 
 type SurveySessionResponse {
@@ -302,7 +303,7 @@ type SurveySessionResponse {
 
 type StartSurveySessionResponse {
   nextQuestion: JSON
-  status: SessionStatus!
+  metadata: JSON
   error: Error
 }
 
@@ -329,12 +330,6 @@ input SubmitSurveySessionAnswerInput {
   sessionId: ID!
   questionId: ID!
   answer: JSON!
-}
-
-type SubmitSurveySessionAnswerResponse {
-  nextQuestion: JSON
-  metadata: JSON
-  error: Error
 }
 
 type SubmitSurveySessionAnswerResponse {

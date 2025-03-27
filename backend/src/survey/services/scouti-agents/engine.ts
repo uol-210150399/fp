@@ -31,17 +31,16 @@ export class ScoutiEngine {
       // First check for concerns
       const [concernResult, qualityResult] = await Promise.all([
         this.concernClassifier.checkConcerns(currentQuestion.text, currentAnswer),
-        this.qualityClassifier.checkQuality(currentQuestion.text, currentAnswer)
+        this.qualityClassifier.checkQuality(currentQuestion.text, currentQuestion.instructions, currentAnswer)
       ]);
 
       // If there are concerns, only generate concern-based follow-ups
       if (concernResult.type !== ConcernEnumValues.NONE) {
         const concernFollowUps = await this.concernFollowUpGenerator.generateFollowUp(
           currentQuestion.text,
-          currentAnswer,
+          currentQuestion.instructions,
           concernResult.type as ConcernEnumValues,
           conversationHistory,
-          state.context
         );
         return (concernFollowUps.questions || []).filter(q => q.trim().length > 0);
       }
@@ -55,8 +54,10 @@ export class ScoutiEngine {
         currentQuestion.text,
         currentAnswer,
         qualityResult.type as QualityEnumValues,
+        qualityResult.rationale,
         conversationHistory,
-        state.context
+        state.context,
+        currentQuestion.instructions
       );
 
       return (qualityFollowUps.questions || []).filter(q => q.trim().length > 0);

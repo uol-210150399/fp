@@ -42,9 +42,9 @@ export class TeamService {
 
     const queryBuilder = this.teamRepository
       .createQueryBuilder('team')
-      .leftJoinAndSelect('team.memberships', 'memberships')
+      .leftJoinAndSelect('team.memberships', 'allMemberships')
       .leftJoinAndSelect('team.projects', 'projects')
-      .where('memberships.userId = :userId', { userId: input.filter.userId })
+      .innerJoin('team.memberships', 'userMembership', 'userMembership.userId = :userId', { userId: input.filter.userId })
       .take(first + 1);
 
     if (after) {

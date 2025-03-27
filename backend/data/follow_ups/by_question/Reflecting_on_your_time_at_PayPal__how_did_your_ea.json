@@ -1,0 +1,40 @@
+{
+  "question": "Reflecting on your time at PayPal, how did your early exposure to public bug bounty programs shape your view on utilizing crowdsourced security?",
+  "follow_ups": [
+    {
+      "timestamp": "2025-03-27T07:54:54.492Z",
+      "generator": "CONCERN",
+      "model": "o3-mini",
+      "inputs": {
+        "question": "Reflecting on your time at PayPal, how did your early exposure to public bug bounty programs shape your view on utilizing crowdsourced security?",
+        "instructions": "",
+        "concernType": "REFUSAL",
+        "conversationHistory": [
+          {
+            "role": "assistant",
+            "content": "Can you please share your background and your role at your current organization?"
+          },
+          {
+            "role": "respondent",
+            "content": "\"My current role is a Senior Manager of Product Management. My background is in engineering and product management with a focus on security. I spent several years working in security-related roles at Magento, an e-commerce company acquired by PayPal, eBay, and later by Adobe. At those companies, I worked directly on crowdsourced security. PayPal was one of the very first companies to have a public bug bounty program.\""
+          },
+          {
+            "role": "assistant",
+            "content": "You mentioned PayPal's early adoption of public bug bounty programs; could you elaborate on how that experience has influenced your current approach to integrating crowdsourced security into product management?"
+          },
+          {
+            "role": "respondent",
+            "content": "\"i dont wanna answer this\""
+          }
+        ]
+      },
+      "result": {
+        "questions": [
+          "Can you describe how your early experience with PayPal's public bug bounty program may have influenced your current approach to crowdsourced security in product management?",
+          "In what ways has your exposure to PayPal's pioneering bug bounty initiatives shaped your understanding or implementation of crowdsourced security strategies?",
+          "How did your time at PayPal, particularly with the early public bug bounty initiative, contribute to the development of your current views on integrating crowdsourced security?"
+        ]
+      }
+    }
+  ]
+}

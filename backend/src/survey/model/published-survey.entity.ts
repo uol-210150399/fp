@@ -12,7 +12,6 @@ import { SurveyEntity } from './survey.entity';
 import { BaseEntity } from '../../common/model/base.entity';
 import { TeamMembershipEntity } from '../../team/model/team-membership.entity';
 import { Injectable } from '@nestjs/common';
-import { SurveyDTOMapper } from '../dtos/survey-dto-mapper';
 
 @Entity('published_survey')
 @Unique(['surveyId', 'version'])
@@ -21,7 +20,7 @@ export class PublishedSurveyEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
 
-  @Column({ name: 'form_snapshot', type: 'jsonb' })
+  @Column({ name: 'form_snapshot', type: 'jsonb', nullable: false })
   formSnapshot: any;
 
   @ManyToOne(() => SurveyEntity, (survey) => survey.publishedVersions)
@@ -34,15 +33,12 @@ export class PublishedSurveyEntity extends BaseEntity {
   @Column({ name: 'version', type: 'integer' })
   version: number;
 
-  @Column({ name: 'published_by' })
+  @Column({ name: 'published_by', nullable: true, type: 'uuid' })
   publishedById: string;
 
   @ManyToOne(() => TeamMembershipEntity)
   @JoinColumn({ name: 'published_by' })
   publishedBy: TeamMembershipEntity;
-
-  @Column({ name: 'form', type: 'jsonb' })
-  form: ReturnType<typeof SurveyDTOMapper.toGraphQL>;
 
   @CreateDateColumn()
   createdAt: Date;

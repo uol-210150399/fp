@@ -13,6 +13,8 @@ import { AuthModule } from './auth/auth.module';
 import { ClerkModule } from './auth/clerk.module';
 import { TeamModule } from './team/team.module';
 import { SurveyModule } from './survey/survey.module';
+import { UserModule } from './user/user.module';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { SurveyModule } from './survey/survey.module';
     }),
     TeamModule,
     SurveyModule,
+    UserModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       typePaths: ['./**/*.graphql'],

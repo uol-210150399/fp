@@ -1,6 +1,8 @@
 import OpenAI from "openai";
 import { ConversationHistory } from "./schema";
 import { config } from "./config";
+import { storage } from "../storage";
+import { formatConversationHistory } from "./utils";
 
 export class CheckpointEvaluator {
   private readonly client: OpenAI;
@@ -9,6 +11,24 @@ export class CheckpointEvaluator {
   constructor(model: string = 'o3-mini') {
     this.client = new OpenAI({ apiKey: config.openai.apiKey });
     this.model = model;
+  }
+
+  private async logEvaluation(inputs: { condition: string, conversationHistory: ConversationHistory }, result: any) {
+    try {
+      const timestamp = new Date().toISOString();
+      const logEntry = {
+        timestamp,
+        evaluator: 'CHECKPOINT',
+        model: this.model,
+        inputs,
+        result
+      };
+
+      await storage.appendToFile('evaluations/checkpoint_logs.json', JSON.stringify(logEntry) + '\n');
+    } catch (error) {
+      console.error(`Failed to log checkpoint evaluation:`, error);
+      // Don't throw error to avoid interrupting main evaluation flow
+    }
   }
 
   async evaluate(condition: string, conversationHistory: ConversationHistory): Promise<{
@@ -46,7 +66,7 @@ Return a JSON object with:
     "conditionType": "POSITIVE" | "NEGATIVE"
 }
     `
-    const updatedPrompt = prompt.replace("{condition}", condition).replace("{conversationHistory}", conversationHistory.join("\n"));
+    const updatedPrompt = prompt.replace("{condition}", condition).replace("{conversationHistory}", formatConversationHistory(conversationHistory));
     const response = await this.client.chat.completions.create({
       model: this.model,
       messages: [{ role: 'user', content: updatedPrompt }],
@@ -55,12 +75,17 @@ Return a JSON object with:
 
     const result = response.choices[0]?.message?.content;
     if (!result) {
-      return {
-        result: "UNKNOWN",
+      const defaultResult = {
+        result: "UNKNOWN" as "UNKNOWN" | "TRUE" | "FALSE",
         steps: "No response from LLM",
-        conditionType: "POSITIVE"
-      }
+        conditionType: "POSITIVE" as "POSITIVE" | "NEGATIVE"
+      };
+      await this.logEvaluation({ condition, conversationHistory }, defaultResult);
+      return defaultResult;
     }
-    return JSON.parse(result);
+
+    const parsedResult = JSON.parse(result);
+    await this.logEvaluation({ condition, conversationHistory }, parsedResult);
+    return parsedResult;
   }
 }

@@ -1,6 +1,7 @@
 import { Args, Mutation, Resolver, Context } from '@nestjs/graphql';
 import { SurveyResponseService } from '../services/survey-response.service';
-import { Error, ErrorCode, SessionStatus, StartSurveySessionInput, SubmitSurveySessionAnswerInput } from 'src/generated/graphql';
+import { Error, ErrorCode, SessionStatus, StartSurveySessionInput, SubmitSurveySessionAnswerInput, SurveySession } from 'src/generated/graphql';
+import { SurveyResponseDTOMapper } from '../dtos/survey-response-dto-mapper';
 
 @Resolver()
 export class SurveyResponseResolver {
@@ -15,7 +16,7 @@ export class SurveyResponseResolver {
   ): Promise<any> {
     try {
       const { session, nextQuestion, status } = await this.surveyResponseService.startSurveySession(
-        { surveyKey: input.surveyKey },
+        { surveyKey: input.surveyKey, sessionId: input.sessionId },
         context?.req?.ip,
       );
 
@@ -25,6 +26,7 @@ export class SurveyResponseResolver {
           sessionId: session.id,
           surveyId: session.surveyId,
           status,
+          session: SurveyResponseDTOMapper.toGraphQL(session),
         },
         error: null,
       };
@@ -47,12 +49,12 @@ export class SurveyResponseResolver {
     nextQuestion: any,
     metadata: {
       status: SessionStatus,
-      redirectUrl?: string,
+      session: SurveySession,
     },
     error: Error
   }> {
     try {
-      const { nextQuestion, status } = await this.surveyResponseService.submitSurveySessionAnswer(
+      const { nextQuestion, status, session } = await this.surveyResponseService.submitSurveySessionAnswer(
         input,
       );
 
@@ -60,17 +62,14 @@ export class SurveyResponseResolver {
         nextQuestion,
         metadata: {
           status,
-          redirectUrl: null,
+          session: SurveyResponseDTOMapper.toGraphQL(session),
         },
         error: null,
       };
     } catch (error) {
       return {
         nextQuestion: null,
-        metadata: {
-          status: SessionStatus.COMPLETED,
-          redirectUrl: null,
-        },
+        metadata: null,
         error: {
           code: ErrorCode.INTERNAL_ERROR,
           message: error.message,

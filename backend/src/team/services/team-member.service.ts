@@ -161,10 +161,6 @@ export class TeamMemberService {
     const requestingMembership = await this.teamMembershipRepository.findOne({
       where: { teamId, userId: requestingUserId },
     });
-    console.log({
-      requestingUserId,
-      teamId,
-    })
 
     if (
       !requestingMembership ||

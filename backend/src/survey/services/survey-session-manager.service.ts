@@ -12,18 +12,22 @@ import {
   SessionCheckpoint,
   SessionTextQuestion,
   SessionMultipleChoiceQuestion,
-  SessionRatingQuestion
+  SessionRatingQuestion,
+  SessionMatrixQuestion,
+  SessionNumberQuestion,
+  SessionStatementField,
+  SessionRankingQuestion
 } from '../mappers/session-state.mapper';
-import { ConversationHistory } from './scouti/schema';
+import { ConversationHistory } from './scouti-agents/schema';
 import { v4 as uuidv4 } from 'uuid';
-import { ScoutiEngine } from './scouti/engine';
+import { ScoutiEngine } from './scouti-agents/engine';
 
 @Injectable()
 export class SurveySessionManagerService {
+  private readonly scoutiEngine: ScoutiEngine;
   constructor(
     @InjectRepository(SurveySessionEntity)
     private readonly sessionRepository: Repository<SurveySessionEntity>,
-    private readonly scoutiEngine: ScoutiEngine
   ) {
     this.scoutiEngine = new ScoutiEngine();
   }
@@ -141,17 +145,6 @@ export class SurveySessionManagerService {
           instructions: textQuestion.instructions
         };
       }
-      case 'MultipleChoiceQuestion': {
-        const mcQuestion = question as SessionMultipleChoiceQuestion;
-        return {
-          ...baseData,
-          text: mcQuestion.text,
-          description: mcQuestion.description,
-          required: mcQuestion.required,
-          choices: mcQuestion.choices,
-          allowMultiple: mcQuestion.allowMultiple
-        };
-      }
       case 'RatingQuestion': {
         const ratingQuestion = question as SessionRatingQuestion;
         return {
@@ -163,14 +156,71 @@ export class SurveySessionManagerService {
           steps: ratingQuestion.steps
         };
       }
+      case 'MatrixQuestion': {
+        const matrixQuestion = question as SessionMatrixQuestion;
+        return {
+          ...baseData,
+          text: matrixQuestion.text,
+          description: matrixQuestion.description,
+          required: matrixQuestion.required,
+          columns: matrixQuestion.columns,
+          rows: matrixQuestion.rows,
+          allowMultiplePerRow: matrixQuestion.allowMultiplePerRow
+        };
+      }
+      case 'NumberQuestion': {
+        const numberQuestion = question as SessionNumberQuestion;
+        return {
+          ...baseData,
+          text: numberQuestion.text,
+          description: numberQuestion.description,
+          required: numberQuestion.required,
+          min: numberQuestion.min,
+          max: numberQuestion.max,
+          unit: numberQuestion.unit,
+        };
+      }
+      case 'StatementField': {
+        const statementField = question as SessionStatementField;
+        return {
+          ...baseData,
+          text: statementField.text,
+          buttonText: statementField.buttonText,
+          textSize: statementField.textSize,
+        };
+      }
+      case 'MultipleChoiceQuestion': {
+        const multipleChoiceQuestion = question as SessionMultipleChoiceQuestion;
+        return {
+          ...baseData,
+          text: multipleChoiceQuestion.text,
+          description: multipleChoiceQuestion.description,
+          required: multipleChoiceQuestion.required,
+          choices: multipleChoiceQuestion.choices,
+          allowMultiple: multipleChoiceQuestion.allowMultiple,
+          randomize: multipleChoiceQuestion.randomize
+        };
+      }
+      case 'RankingQuestion': {
+        const rankingQuestion = question as SessionRankingQuestion;
+        return {
+          ...baseData,
+          text: rankingQuestion.text,
+          description: rankingQuestion.description,
+          required: rankingQuestion.required,
+          choices: rankingQuestion.choices,
+          randomize: rankingQuestion.randomize
+        };
+      }
       default:
         return baseData;
     }
   }
 
-  async getNextQuestion(sessionId: string): Promise<{
+  async getNextQuestion(sessionId: string, firstQuestion: boolean = false): Promise<{
     nextQuestion: any;
     status: SessionStatus;
+    session: SurveySessionEntity;
   }> {
     let session = await this.sessionRepository.findOne({
       where: { id: sessionId }
@@ -187,7 +237,8 @@ export class SurveySessionManagerService {
       await this.sessionRepository.save(session);
       return {
         nextQuestion: null,
-        status: SessionStatus.COMPLETED
+        status: SessionStatus.COMPLETED,
+        session,
       };
     }
 
@@ -198,7 +249,7 @@ export class SurveySessionManagerService {
       return this.getNextQuestion(sessionId);
     }
 
-    if (nextQuestion.type === 'TextQuestion') {
+    if (nextQuestion.type === 'TextQuestion' && !firstQuestion) {
       const repetitionResult = await this.scoutiEngine.detectRepetition(nextQuestion as SessionTextQuestion, this.buildConversationHistory(session));
       if (repetitionResult.detected) {
         session.state = this.skipRepetition(session.state, nextQuestion, repetitionResult);
@@ -211,13 +262,15 @@ export class SurveySessionManagerService {
 
     return {
       nextQuestion: this.getQuestionData(nextQuestion),
-      status: SessionStatus.IN_PROGRESS
+      status: SessionStatus.IN_PROGRESS,
+      session,
     };
   }
 
   async generateNextQuestion(input: SubmitSurveySessionAnswerInput): Promise<{
     nextQuestion: any;
     status: SessionStatus;
+    session: SurveySessionEntity;
   }> {
 
     const session = await this.sessionRepository.findOne({
@@ -232,9 +285,9 @@ export class SurveySessionManagerService {
       session.state = this.addFollowUpQuestions(session.state, currentQuestion, followUpQuestions);
     }
 
-    await this.updateSessionState(input.sessionId, (state) => {
+    await this.updateSessionState(input.sessionId, () => {
       const answeredQuestion = questions.find(q => q.id === input.questionId);
-      const topic = state.topics.find(t =>
+      const topic = session.state.topics.find(t =>
         t.fields.some(f => f.id === answeredQuestion.id)
       );
       const field = topic.fields.find(f => f.id === answeredQuestion.id);
@@ -242,7 +295,7 @@ export class SurveySessionManagerService {
       field.response = input.answer;
       field.status = QuestionStatus.Asked;
 
-      return state;
+      return session.state;
     });
 
     // Get next question
@@ -261,8 +314,8 @@ export class SurveySessionManagerService {
           content: f.text
         });
         history.push({
-          role: 'user',
-          content: f.response
+          role: 'respondent',
+          content: f.response ? JSON.stringify(f.response) : ""
         });
       }
     });

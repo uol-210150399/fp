@@ -1,0 +1,42 @@
+"""
+User Types
+"""
+type User implements Node {
+  id: ID!
+  email: String!
+  firstName: String
+  lastName: String
+  imageUrl: String
+  createdAt: Date!
+  updatedAt: Date
+}
+
+type UserConnection implements Connection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+}
+
+type UserEdge implements Edge {
+  cursor: String!
+  node: User!
+}
+
+"""
+User Operation Outputs
+"""
+type UserResponse {
+  data: User
+  error: Error
+}
+
+type UsersResponse {
+  data: UserConnection!
+  error: Error
+}
+
+"""
+User Inputs
+"""
+input UsersFilterInput {
+  search: String
+}
