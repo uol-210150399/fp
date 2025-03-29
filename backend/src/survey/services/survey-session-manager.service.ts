@@ -18,9 +18,9 @@ import {
   SessionStatementField,
   SessionRankingQuestion
 } from '../mappers/session-state.mapper';
-import { ConversationHistory } from './scouti-agents/schema';
+import { ConversationHistory } from './scouti-engine/schema';
 import { v4 as uuidv4 } from 'uuid';
-import { ScoutiEngine } from './scouti-agents/engine';
+import { ScoutiEngine } from './scouti-engine/engine';
 
 @Injectable()
 export class SurveySessionManagerService {
