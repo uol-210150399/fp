@@ -12,7 +12,7 @@ describe('AppController', () => {
         {
           provide: AppService,
           useValue: {
-            okMillie: () => 'Millie is ok',
+            okScouti: () => 'Scouti is ok',
           },
         },
       ],
@@ -22,9 +22,9 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Millie is ok"', () => {
+    it('should return "Scouti is ok"', () => {
 
-      expect(appController.okMillie()).toBe('Millie is ok');
+      expect(appController.okScouti()).toBe('Scouti is ok');
     });
   });
 });

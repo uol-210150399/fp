@@ -1,5 +1,7 @@
 import { QuestionSkeleton } from "./question-skeleton";
 import { useState } from "react";
+import { Button } from "@/components/ui/button"
+import { Check } from "lucide-react";
 
 interface Choice {
   label: string;
@@ -11,41 +13,61 @@ interface ChoiceQuestionProps {
   description?: string;
   required?: boolean;
   choices: Choice[];
-  onSubmit?: (value: string, otherValue?: string) => void;
+  allowMultiple?: boolean;
+  onSubmit?: (values: { id: string; text: string }[]) => void;
 }
-
-const CheckIcon = () => (
-  <svg height="13" width="16" className="fill-current">
-    <path d="M14.293.293l1.414 1.414L5 12.414.293 7.707l1.414-1.414L5 9.586z"></path>
-  </svg>
-);
 
 export const ChoiceQuestion: React.FC<ChoiceQuestionProps> = ({
   title,
   description,
-  required,
+  required = false,
   choices,
+  allowMultiple = false,
   onSubmit,
 }) => {
-  const [selectedValue, setSelectedValue] = useState<string>("");
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [otherValue, setOtherValue] = useState("");
 
   const handleChoiceClick = (choiceValue: string) => {
-    setSelectedValue(choiceValue);
+    setSelectedValues(prev => {
+      if (allowMultiple) {
+        // Toggle selection for multiple choice
+        return prev.includes(choiceValue)
+          ? prev.filter(v => v !== choiceValue)
+          : [...prev, choiceValue];
+      } else {
+        // Single selection
+        return [choiceValue];
+      }
+    });
+    if (error) setError(null);
   };
 
   const handleOtherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setOtherValue(e.target.value);
+    if (error) setError(null);
   };
 
   const handleSubmit = () => {
+    if (required && selectedValues.length === 0) {
+      setError("This question requires an answer");
+      return;
+    }
+
+
     if (onSubmit) {
-      onSubmit(selectedValue, selectedValue === "other" ? otherValue : undefined);
+      const selectedChoices = selectedValues.map((value) => ({
+        id: value,
+        text: choices.find((choice) => choice.value === value)?.label || "",
+      }));
+      onSubmit(selectedChoices);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      e.stopPropagation();
       handleSubmit();
     }
   };
@@ -57,6 +79,7 @@ export const ChoiceQuestion: React.FC<ChoiceQuestionProps> = ({
         description: description,
       }}
       required={required}
+      error={error}
     >
       <div className="mt-8">
         <ul className="flex flex-col gap-2 w-fit">
@@ -64,62 +87,36 @@ export const ChoiceQuestion: React.FC<ChoiceQuestionProps> = ({
             <li
               key={choice.value}
               className={`
-                flex items-center justify-between text-[#0142AC] 
-                shadow-[0_0_0_1px_rgba(1,66,172,0.6)_inset] 
-                bg-[#0142AC]/10 px-0 py-1 cursor-pointer rounded 
-                select-none hover:bg-[#0142AC]/30
-                ${selectedValue === choice.value ? 'shadow-[0_0_0_2px_rgba(1,66,172,0.8)_inset]' : ''}
+                flex items-center justify-between text-primary 
+                shadow-[0_0_0_1px_hsl(var(--primary))_inset] 
+                bg-primary/10 px-0 py-1 cursor-pointer rounded 
+                select-none hover:bg-primary/30
+                ${selectedValues.includes(choice.value) ? 'shadow-[0_0_0_2px_hsl(var(--primary))_inset]' : ''}
               `}
               onClick={() => handleChoiceClick(choice.value)}
             >
-              <div className="flex items-center justify-center">
-                <div className={`
-                  flex items-center justify-center p-1.5 
-                  bg-white/80 text-xs font-bold
-                  shadow-[0_0_0_1px_rgba(1,66,172,0.6)_inset] 
-                  rounded-sm h-[22px] w-[22px] mx-2
-                  ${selectedValue === choice.value ? 'bg-[#0142AC] ' : ''}
-                `}>
-                  {String.fromCharCode(65 + index)}
-                </div>
-                {choice.value === "other" ? (
-                  <input
-                    type="text"
-                    placeholder="Type your answer"
-                    className={`
-                      bg-transparent border-none outline-none 
-                      text-[#0142AC] text-xl max-w-[200px]
-                      placeholder:text-[#0142AC]/80 placeholder:text-base
-                      ${selectedValue === "other" ? 'block' : 'hidden'}
-                    `}
-                    value={otherValue}
-                    onChange={handleOtherInputChange}
-                    onKeyDown={handleKeyDown}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : null}
-                <span className={`text-xl ${selectedValue === "other" && choice.value === "other" ? 'hidden' : 'block'}`}>
+              <div className="flex items-center px-3 justify-center">
+                <span className={`text-xl`}>
                   {choice.label}
                 </span>
               </div>
               <div className={`
                 flex items-center justify-center rounded px-2 py-0 h-[30px]
-                ${selectedValue === choice.value ? 'visible opacity-100' : 'invisible opacity-0'}
-                ${selectedValue === "other" && choice.value === "other" ? 'bg-[#0142AC] fill-white' : ''}
+                ${selectedValues.includes(choice.value) ? 'visible opacity-100' : 'invisible opacity-0'}
               `}>
-                <CheckIcon />
+                <Check className="h-4 w-4" />
               </div>
             </li>
           ))}
         </ul>
       </div>
-      <div className="mt-4 flex items-center gap-3 max-[600px]:fixed max-[600px]:z-10 max-[600px]:left-0 max-[600px]:bottom-0 max-[600px]:w-full max-[600px]:px-4">
-        <button
+      <div className="mt-4 flex items-center gap-3">
+        <Button
           onClick={handleSubmit}
-          className="font-bold cursor-pointer bg-[#0142AC] text-white outline-none shadow-[0_3px_12px_0_rgba(0,0,0,0.1)] px-[14px] rounded h-10 text-xl uppercase transition-colors duration-100 hover:bg-[#275EB8] max-[600px]:w-full"
+          disabled={required && selectedValues.length === 0}
         >
-          OK
-        </button>
+          Submit
+        </Button>
       </div>
     </QuestionSkeleton>
   );

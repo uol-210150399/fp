@@ -1,5 +1,7 @@
 import { QuestionSkeleton } from "./question-skeleton";
 import { useState } from "react";
+import { Button } from "@/components/ui/button"
+import { ArrowRight } from "lucide-react";
 
 interface RatingLabel {
   value: number;
@@ -13,40 +15,72 @@ interface RatingQuestionProps {
   min?: number;
   max?: number;
   labels: RatingLabel[];
+  startAtOne?: boolean;
+  steps?: number;
   onSubmit?: (value: number) => void;
 }
-
-const SmallArrowIcon = () => (
-  <svg height="8" width="7">
-    <path d="M5 3.5v1.001H-.002v-1z"></path>
-    <path d="M4.998 4L2.495 1.477 3.2.782 6.416 4 3.199 7.252l-.704-.709z"></path>
-  </svg>
-);
 
 export const RatingQuestion: React.FC<RatingQuestionProps> = ({
   title,
   description,
-  required,
+  required = false,
   min = 0,
   max = 10,
   labels,
+  startAtOne = false,
+  steps,
   onSubmit,
 }) => {
   const [selectedValue, setSelectedValue] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Calculate actual min/max based on startAtOne
+  const actualMin = startAtOne ? 1 : min;
+  const actualMax = steps ? actualMin + steps - 1 : max;
 
   const handleSelect = (value: number) => {
     setSelectedValue(value);
+    if (error) setError(null);
   };
 
   const handleSubmit = () => {
+    if (required && selectedValue === null) {
+      setError("This question requires an answer");
+      return;
+    }
+
     if (selectedValue !== null && onSubmit) {
       onSubmit(selectedValue);
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent, value: number) => {
+    switch (e.key) {
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        handleSelect(value);
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (selectedValue !== null && selectedValue > actualMin) {
+          handleSelect(selectedValue - 1);
+        }
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        if (selectedValue !== null && selectedValue < actualMax) {
+          handleSelect(selectedValue + 1);
+        } else if (selectedValue === null) {
+          handleSelect(actualMin);
+        }
+        break;
+    }
+  };
+
   const numbers = Array.from(
-    { length: max - min + 1 },
-    (_, i) => min + i
+    { length: actualMax - actualMin + 1 },
+    (_, i) => actualMin + i
   );
 
   return (
@@ -56,14 +90,15 @@ export const RatingQuestion: React.FC<RatingQuestionProps> = ({
         description: description,
       }}
       required={required}
+      error={error}
     >
       <div className="mt-8">
         {/* Mobile Labels */}
-        <div className="flex flex-col text-sm text-[#0142AC] fill-[#0142AC] leading-5 lg:hidden">
+        <div className="flex flex-col text-sm text-primary fill-primary leading-5 lg:hidden">
           {labels.map((label) => (
             <span key={label.value} className="flex items-center gap-0.5">
               <span>{label.value}</span>
-              <SmallArrowIcon />
+              <ArrowRight className="h-4 w-4" />
               <span>{label.label}</span>
             </span>
           ))}
@@ -74,22 +109,30 @@ export const RatingQuestion: React.FC<RatingQuestionProps> = ({
           <div
             className="grid gap-1"
             style={{
-              gridTemplateColumns: 'repeat(auto-fit, minmax(40px, 1fr))',
+              gridTemplateColumns: `repeat(${numbers.length}, minmax(40px, 1fr))`,
             }}
+            role="radiogroup"
+            aria-required={required}
+            aria-label={title}
           >
             {numbers.map((number) => (
               <div
                 key={number}
                 onClick={() => handleSelect(number)}
+                onKeyDown={(e) => handleKeyDown(e, number)}
+                role="radio"
+                aria-checked={selectedValue === number}
+                tabIndex={0}
                 className={`
                   h-[60px] max-w-full
                   flex items-center justify-center
-                  bg-[rgba(1,66,172,0.1)] rounded cursor-pointer select-none
-                  shadow-[0_0_0_1px_rgba(1,66,172,0.6)_inset]
-                  text-[#0142AC] text-base lg:text-xl
+                  bg-primary/10 rounded cursor-pointer select-none
+                  shadow-[0_0_0_1px_hsl(var(--primary))_inset]
+                  text-primary text-base lg:text-xl
                   transition-[background-color] duration-100 ease-out
-                  hover:bg-[rgba(1,66,172,0.3)]
-                  ${selectedValue === number ? 'text-[rgb(230,236,247)] !bg-[#0142AC]' : ''}
+                  hover:bg-primary/30
+                  focus:outline-none focus:shadow-[0_0_0_2px_hsl(var(--primary))_inset]
+                  ${selectedValue === number ? 'text-white !bg-primary' : ''}
                   max-[600px]:h-[40px]
                 `}
               >
@@ -100,10 +143,10 @@ export const RatingQuestion: React.FC<RatingQuestionProps> = ({
         </div>
 
         {/* Desktop Labels */}
-        <div className="hidden lg:flex justify-between text-[#0142AC] mt-4 px-0.5">
+        <div className="hidden lg:flex justify-between text-primary mt-4 px-0.5">
           {labels.map((label) => (
             <span key={label.value} className={`
-              ${label.value === 5 ? 'translate-x-5' : ''}
+              ${label.value === Math.floor(numbers.length / 2) ? 'translate-x-5' : ''}
             `}>
               {label.label}
             </span>
@@ -111,13 +154,13 @@ export const RatingQuestion: React.FC<RatingQuestionProps> = ({
         </div>
 
         {/* Submit Button */}
-        <div className="mt-4 flex items-center gap-3 max-[600px]:fixed max-[600px]:z-10 max-[600px]:left-0 max-[600px]:bottom-0 max-[600px]:w-full max-[600px]:px-4">
-          <button
+        <div className="mt-4 flex items-center gap-3">
+          <Button
             onClick={handleSubmit}
-            className="font-bold cursor-pointer bg-[#0142AC] text-white outline-none shadow-[0_3px_12px_0_rgba(0,0,0,0.1)] px-[14px] rounded h-10 text-xl uppercase transition-colors duration-100 hover:bg-[#275EB8] max-[600px]:w-full"
+            disabled={required && selectedValue === null}
           >
-            OK
-          </button>
+            Submit
+          </Button>
         </div>
       </div>
     </QuestionSkeleton>

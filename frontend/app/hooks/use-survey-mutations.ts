@@ -102,3 +102,23 @@ export function usePublishSurvey() {
     },
   });
 }
+
+export function useInviteRespondent() {
+  const [mutate, { loading, error }] = useMutation(gql`
+    mutation InviteRespondent($input: InviteRespondentInput!) {
+      inviteRespondent(input: $input) {
+        id
+        respondentData {
+          email
+          name
+          role
+        }
+      }
+    }
+  `);
+
+  return [
+    mutate,
+    { loading, error }
+  ] as const;
+}

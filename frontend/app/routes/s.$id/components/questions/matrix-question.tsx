@@ -1,5 +1,6 @@
 import { QuestionSkeleton } from "./question-skeleton";
 import { useState } from "react";
+import { Button } from "@/components/ui/button"
 
 interface MatrixOption {
   id: string;
@@ -24,12 +25,13 @@ interface MatrixQuestionProps {
 export const MatrixQuestion: React.FC<MatrixQuestionProps> = ({
   title,
   description,
-  required,
+  required = false,
   options,
   columns,
   onSubmit,
 }) => {
   const [answers, setAnswers] = useState<MatrixOption[]>(options);
+  const [error, setError] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
 
   const handleChange = (optionId: string, columnId: string) => {
@@ -41,21 +43,38 @@ export const MatrixQuestion: React.FC<MatrixQuestionProps> = ({
       )
     );
     setHasChanges(true);
+    if (error) setError(null);
   };
 
-  const handleClear = () => {
+  const handleReset = () => {
     setAnswers(options);
     setHasChanges(false);
+    if (error) setError(null);
   };
 
   const handleSubmit = () => {
+    if (required) {
+      const unanswered = answers.some(option => !option.value);
+      if (unanswered) {
+        setError("Please answer all rows");
+        return;
+      }
+    }
+
     if (onSubmit) {
       onSubmit(answers);
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent, optionId: string, columnId: string) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      handleChange(optionId, columnId);
+    }
+  };
+
   // Calculate minimum width based on number of columns
-  const minTableWidth = `max(720px, ${columns.length * 150 + 112}px)`;
+  const minTableWidth = `max(720px, ${columns.length * 150 + 200}px)`;
 
   return (
     <QuestionSkeleton
@@ -64,26 +83,19 @@ export const MatrixQuestion: React.FC<MatrixQuestionProps> = ({
         description: description,
       }}
       required={required}
+      error={error}
     >
       <div className="mt-8">
-        <div className="text-base leading-6 text-[#0142AC] font-normal overflow-x-auto">
+        <div className="overflow-x-auto">
           <div style={{ minWidth: minTableWidth }}>
-            <table className="w-full border-separate border-spacing-y-2 table-fixed">
-              <colgroup>
-                <col className="w-28" /> {/* First column fixed at 112px */}
-                {columns.map(col => (
-                  <col key={col.id} className="min-w-[150px]" />
-                ))}
-              </colgroup>
-
+            <table className="w-full border-separate border-spacing-0">
               <thead>
                 <tr>
-                  <th className="font-normal p-[10px_16px] bg-white"></th>
+                  <th className="p-[10px_16px] h-12 text-left sticky left-0 z-[1] bg-white">
+                    <span className="sr-only">Options</span>
+                  </th>
                   {columns.map(column => (
-                    <th
-                      key={column.id}
-                      className="font-normal p-[10px_16px] break-words bg-white"
-                    >
+                    <th key={column.id} className="p-[10px_16px] h-12 text-center">
                       {column.label}
                     </th>
                   ))}
@@ -96,25 +108,27 @@ export const MatrixQuestion: React.FC<MatrixQuestionProps> = ({
                     key={option.id}
                     className="shadow-[0_0_0_100vh_rgba(1,66,172,0.1)_inset] rounded"
                   >
-                    <td className="p-[10px_16px] h-12 sticky left-0 z-[1] bg-white shadow-[0_0_0_100vh_rgba(1,66,172,0.1)_inset] max-w-[112px] break-words">
+                    <td className="p-[10px_16px] h-12 sticky left-0 z-[1] bg-white 
+                      shadow-[0_0_0_100vh_rgba(1,66,172,0.1)_inset] max-w-[200px] break-words">
                       {option.label}
                     </td>
                     {columns.map(column => (
                       <td key={column.id} className="p-[10px_16px] h-12">
                         <div className="flex items-center justify-center">
-                          <input
-                            type="radio"
-                            name={option.id}
-                            checked={option.value === column.id}
-                            onChange={() => handleChange(option.id, column.id)}
+                          <div
+                            role="radio"
+                            aria-checked={option.value === column.id}
+                            tabIndex={0}
+                            onClick={() => handleChange(option.id, column.id)}
+                            onKeyDown={(e) => handleKeyDown(e, option.id, column.id)}
                             className={`
-                              appearance-none cursor-pointer border border-[rgba(1,66,172,0.8)] 
-                              bg-white h-5 w-5 rounded-full relative 
-                              checked:after:content-[''] checked:after:h-2.5 checked:after:w-2.5 
-                              checked:after:bg-[#0142AC] checked:after:absolute checked:after:rounded-full 
-                              checked:after:top-1/2 checked:after:left-1/2 
-                              checked:after:-translate-x-1/2 checked:after:-translate-y-1/2
+                              appearance-none cursor-pointer border border-primary 
+                              bg-white h-5 w-5 rounded-full relative outline-none
+                              hover:border-primary hover:bg-primary/10
+                              focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+                              transition-all duration-200 ease-out
                               [-webkit-tap-highlight-color:transparent]
+                              ${option.value === column.id ? 'border-primary border-[6px]' : ''}
                             `}
                           />
                         </div>
@@ -128,25 +142,23 @@ export const MatrixQuestion: React.FC<MatrixQuestionProps> = ({
         </div>
 
         {hasChanges && (
-          <p
-            onClick={handleClear}
-            className="mt-4 text-[#0142AC] underline cursor-pointer text-base leading-6
+          <button
+            onClick={handleReset}
+            className="mt-4 text-primary underline cursor-pointer text-base leading-6
               [-webkit-tap-highlight-color:transparent]
               max-[600px]:text-sm max-[600px]:leading-5"
           >
             Clear all
-          </p>
+          </button>
         )}
 
-        <div className="mt-4 flex items-center gap-3 max-[600px]:fixed max-[600px]:z-10 max-[600px]:left-0 max-[600px]:bottom-0 max-[600px]:w-full max-[600px]:px-4">
-          <button
+        <div className="mt-4 flex items-center gap-3">
+          <Button
             onClick={handleSubmit}
-            className="font-bold cursor-pointer bg-[#0142AC] text-white outline-none 
-              shadow-[0_3px_12px_0_rgba(0,0,0,0.1)] px-[14px] rounded h-10 text-xl 
-              uppercase transition-colors duration-100 hover:bg-[#275EB8] max-[600px]:w-full"
+            disabled={required && !hasChanges}
           >
-            OK
-          </button>
+            Submit
+          </Button>
         </div>
       </div>
     </QuestionSkeleton>

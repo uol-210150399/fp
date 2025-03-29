@@ -94,12 +94,16 @@ export function SurveyForm() {
           id: crypto.randomUUID(),
         }
         sections.splice(destination.index, 0, newSection)
-        form.setValue("sections", sections)
+        form.setValue("sections", sections, {
+          shouldDirty: true,
+        })
       } else {
         const sections = form.getValues("sections")
         const [movedSection] = sections.splice(source.index, 1)
         sections.splice(destination.index, 0, movedSection)
-        form.setValue("sections", sections)
+        form.setValue("sections", sections, {
+          shouldDirty: true,
+        })
       }
     } else if (type === "field") {
       if (source.droppableId.includes("dnd-")) {
@@ -111,7 +115,9 @@ export function SurveyForm() {
           id: crypto.randomUUID(),
         }
         questions.splice(destination.index, 0, newQuestion)
-        form.setValue(`${destTopicKey}.fields`, questions)
+        form.setValue(`${destTopicKey}.fields`, questions, {
+          shouldDirty: true,
+        })
       } else {
         const sourceTopicKey = `${source.droppableId}` as `sections.${number}`
         const destTopicKey = `${destination.droppableId}` as `sections.${number}`
@@ -127,11 +133,17 @@ export function SurveyForm() {
 
         if (sourceTopicKey === destTopicKey) {
           sourceQuestions.splice(destination.index, 0, movedQuestion)
-          form.setValue(`${sourceTopicKey}.fields`, sourceQuestions)
+          form.setValue(`${sourceTopicKey}.fields`, sourceQuestions, {
+            shouldDirty: true,
+          })
         } else {
           destQuestions.splice(destination.index, 0, movedQuestion)
-          form.setValue(`${sourceTopicKey}.fields`, sourceQuestions)
-          form.setValue(`${destTopicKey}.fields`, destQuestions)
+          form.setValue(`${sourceTopicKey}.fields`, sourceQuestions, {
+            shouldDirty: true,
+          })
+          form.setValue(`${destTopicKey}.fields`, destQuestions, {
+            shouldDirty: true,
+          })
         }
       }
     }

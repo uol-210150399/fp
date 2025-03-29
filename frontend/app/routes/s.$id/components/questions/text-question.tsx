@@ -1,5 +1,6 @@
 import { QuestionSkeleton } from "./question-skeleton";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button"
 
 interface TextQuestionProps {
   title: string;
@@ -13,22 +14,42 @@ interface TextQuestionProps {
 export const TextQuestion = ({
   title,
   description,
-  required,
-  maxLength,
+  required = false,
+  maxLength = 500,
   placeholder = "Type your answer here...",
   onSubmit,
 }: TextQuestionProps) => {
   const [value, setValue] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSubmit();
+  const adjustHeight = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
     }
   };
 
+  useEffect(() => {
+    adjustHeight();
+  }, [value]);
+
   const handleSubmit = () => {
-    if (onSubmit && value.trim()) {
-      onSubmit(value);
+    if (required && !value.trim()) {
+      setError("This question requires an answer");
+      return;
+    }
+
+    if (onSubmit) {
+      onSubmit(value.trim());
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
@@ -39,16 +60,40 @@ export const TextQuestion = ({
         description: description,
       }}
       required={required}
+      error={error}
     >
-      <input
-        type="text"
-        maxLength={maxLength}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="w-full border-none outline-none text-[#0142AC] pb-2 text-3xl bg-transparent placeholder:text-[#0142AC]/30 transition-shadow duration-100 ease-out shadow-[0_1px_rgba(1,66,172,0.3)] focus:shadow-[0_2px_rgba(1,66,172,1)]"
-      />
+      <div className="flex flex-col gap-2">
+        <textarea
+          ref={textareaRef}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            if (error) setError(null);
+          }}
+          onKeyDown={handleKeyDown}
+          rows={1}
+          className={`
+            w-full min-h-[3rem] border-none resize-none outline-none text-secondary-foreground pb-2 text-xl 
+            bg-transparent placeholder:text-primary/30 
+            transition-shadow duration-100 ease-out
+            shadow-primary/30 
+            focus:shadow-primary
+            ${error ? 'shadow-destructive' : ''}
+          `}
+        />
+        <div className="mt-4 flex items-center gap-3">
+          <Button
+            onClick={handleSubmit}
+            disabled={required && !value.trim()}
+          >
+            Submit
+          </Button>
+          <p className="text-xs leading-4 hidden lg:block">
+            press <strong className="tracking-[0.2px]">Enter ↵</strong>
+          </p>
+        </div>
+      </div>
     </QuestionSkeleton>
   );
-}
+};

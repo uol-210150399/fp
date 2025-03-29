@@ -1,7 +1,7 @@
 import { ClientLoaderFunctionArgs, useLoaderData, useParams, useSearchParams } from "@remix-run/react";
 import { useSurvey } from "@/hooks/use-surveys";
 import { AirplayIcon, DownloadCloudIcon, ArchiveIcon, LinkIcon, SaveIcon, MoreHorizontalIcon, PenLineIcon, UsersIcon, Plus } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { Tabs, TabsTrigger, TabsList } from "@/components/ui/tabs";
 import { SurveySetup } from "./components/survey-setup";
@@ -26,6 +26,9 @@ import { useProject, useTeam } from "@/hooks/use-teams";
 import { useAuth, useClerk, useSignIn } from "@clerk/clerk-react";
 import { useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
+import { SurveyRespondents } from "./components/survey-respondents";
+import { SurveyUrlDialog } from "./components/survey-url-dialog"
+import { toast } from "sonner";
 
 export const clientLoader = async ({ params }: ClientLoaderFunctionArgs) => {
   const { id } = params;
@@ -70,14 +73,21 @@ export default function SurveyDetail() {
     [activeTab]
   )
 
+  const [showUrlDialog, setShowUrlDialog] = useState(false)
+
   const handlePublish = async () => {
-    await publishSurvey({
-      variables: {
-        input: {
-          id: id
+    try {
+      await publishSurvey({
+        variables: {
+          input: {
+            id: survey.id
+          }
         }
-      }
-    })
+      })
+      setShowUrlDialog(true)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   const { isLoaded, isSignedIn, } = useAuth();
@@ -109,6 +119,21 @@ export default function SurveyDetail() {
         </div>
         <div className="self-center flex items-center gap-6">
           <div className="flex space-x-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setShowUrlDialog(true)}
+                >
+                  <LinkIcon size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Copy survey URL
+              </TooltipContent>
+            </Tooltip>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="icon" variant="outline" className="h-9 w-9">
@@ -143,6 +168,11 @@ export default function SurveyDetail() {
           </div>
         </div>
       </div>
+      <SurveyUrlDialog
+        surveyKey={survey.key}
+        open={showUrlDialog}
+        onOpenChange={setShowUrlDialog}
+      />
     </TooltipProvider>
   )
 
@@ -226,7 +256,7 @@ export default function SurveyDetail() {
             value="respondents"
             className="flex flex-col gap-6 data-[state=active]:flex-1 data-[state=active]:overflow-auto mt-0"
           >
-            Respondents
+            <SurveyRespondents />
           </TabsContent>
         </Tabs>
       </div>

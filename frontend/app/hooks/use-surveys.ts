@@ -75,4 +75,33 @@ export function useSurvey(surveyId: string) {
     loading,
     error: error || data?.survey?.error
   };
+}
+
+export function useSurveyRespondents(surveyId: string) {
+  const { data, loading, error, refetch } = useQuery(gql`
+    query ListSurveyRespondents($surveyId: ID!) {
+      listSurveyRespondents(surveyId: $surveyId) {
+        id
+        startedAt
+        completedAt
+        state
+        respondentData {
+          email
+          name
+          role
+        }
+      }
+    }
+  `, {
+    variables: { surveyId },
+  });
+
+  return {
+    respondents: data?.listSurveyRespondents,
+    loading,
+    error,
+    refetch: () => {
+      return refetch();
+    }
+  };
 } 
