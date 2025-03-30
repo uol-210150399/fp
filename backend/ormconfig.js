@@ -1,3 +1,4 @@
+
 module.exports = {
   type: 'postgres',
   host: process.env.DB_HOST,
@@ -9,5 +10,8 @@ module.exports = {
   migrations: ['dist/migrations/*.js'],
   cli: {
     migrationsDir: 'src/migrations',
+  },
+  ssl: {
+    rejectUnauthorized: false,
   },
 }; 

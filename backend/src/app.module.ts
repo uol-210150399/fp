@@ -32,7 +32,13 @@ import { join } from 'path';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false
+        synchronize: false,
+        ssl: true,
+        extra: {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        }
       }),
       inject: [ConfigService],
     }),
