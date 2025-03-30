@@ -10,11 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { formatDistanceToNow } from 'node_modules/date-fns/formatDistanceToNow';
+import { useAuth, useClerk } from "@clerk/clerk-react";
 
 export default function Index() {
   const [createTeamOpen, setCreateTeamOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+
+  const { isLoaded, isSignedIn } = useAuth();
+  const clerk = useClerk()
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      clerk.redirectToSignIn()
+    }
+  }, [isLoaded, isSignedIn, navigate]);
 
   const { data, loading } = useQuery(GET_TEAMS, {
     variables: {
@@ -31,9 +40,6 @@ export default function Index() {
     }
   }, [data, navigate]);
 
-  // If we're loading or redirecting, show nothing
-  if (loading || (data?.teams.data.edges.length > 0)) return null;
-
   const teams = data?.teams.data.edges.map((edge: any) => edge.node) ?? [];
 
   const filteredTeams = useMemo(() => {
@@ -43,6 +49,9 @@ export default function Index() {
       team.name.toLowerCase().includes(query)
     );
   }, [teams, searchQuery]);
+
+  // If we're loading or redirecting, show nothing
+  if (loading || (data?.teams.data.edges.length > 0)) return null;
 
   // Only show empty state if we have no teams
   if (!teams.length) {
