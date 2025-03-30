@@ -45,7 +45,7 @@ export default function Surveys() {
 
   if (!surveys.length) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] flex-col">
+      <div className="w-full">
         <EmptyState
           title="No surveys yet"
           description="Create your first survey to get started"

@@ -31,12 +31,12 @@ export class SurveyService {
   ) { }
 
   private async getTeamMembership(projectId: string, userId: string) {
-    const membership = await this.surveyRepository
-      .createQueryBuilder('survey')
-      .innerJoin('survey.project', 'project')
-      .innerJoin('project.team', 'team')
-      .innerJoin('team.memberships', 'memberships')
-      .where('survey.projectId = :projectId', { projectId })
+    const membership = await this.surveyRepository.manager
+      .createQueryBuilder()
+      .from('team_membership', 'memberships')
+      .innerJoin('team', 'team', 'team.id = memberships.teamId')
+      .innerJoin('project', 'project', 'project.teamId = team.id')
+      .where('project.id = :projectId', { projectId })
       .andWhere('memberships.userId = :userId', { userId })
       .select('memberships.role')
       .getRawOne();
