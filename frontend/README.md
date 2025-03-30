@@ -16,6 +16,12 @@ You can develop your SPA app just like you would a normal Remix app, via:
 npm run dev
 ```
 
+Currently it connects to AWS deployed backend, but to connect it to local instance, ensure the backend is running and up at http://localhost:3177.
+
+Update VITE_BACKEND_API_URL=http://localhost:3177
+
+Restart the application and it should now be connect to the local running instance
+
 ## Production
 
 When you are ready to build a production version of your app, `npm run build` will generate your assets and an `index.html` for the SPA.

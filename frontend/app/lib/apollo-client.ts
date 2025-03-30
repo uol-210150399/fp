@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { InMemoryCache } from '@apollo/client/cache/inmemory/inMemoryCache';
 import { ApolloClient } from '@apollo/client/core';
 
-const GRAPHQL_ENDPOINT = 'http://localhost:3177/graphql';
+const GRAPHQL_ENDPOINT = `${import.meta.env.VITE_BACKEND_API_URL}/graphql`;
 
 export function useApolloClient() {
   const { getToken } = useAuth();

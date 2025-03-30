@@ -9,4 +9,9 @@ export class AppController {
   async okScouti(): Promise<string> {
     return await this.appService.okScouti();
   }
+
+  @Get('health')
+  async health(): Promise<string> {
+    return 'OK';
+  }
 }
