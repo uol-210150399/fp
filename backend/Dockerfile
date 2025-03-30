@@ -9,6 +9,8 @@ RUN npm install -g pnpm && pnpm install --frozen-lockfile || pnpm install
 
 COPY . .
 
+RUN pnpm run codegen
+
 RUN pnpm run build
 
 EXPOSE 3177

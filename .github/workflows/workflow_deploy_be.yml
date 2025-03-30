@@ -69,9 +69,9 @@ jobs:
 
       - name: Login and Push to ECR
         run: |
-
+          AWS_REGION="${{ inputs.aws_region }}"
           DOCKER_ROOT_URL="${{ secrets.ECR_URL }}"
-          aws ecr get-login-password | docker login --username AWS --password-stdin "$DOCKER_ROOT_URL"
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin "$DOCKER_ROOT_URL"
 
           DOCKER_URL="$DOCKER_ROOT_URL:${{ inputs.tag_name }}"
           docker tag "${{ secrets.ECR_URL }}:${{ inputs.tag_name }}" "$DOCKER_URL"
@@ -104,17 +104,17 @@ jobs:
         run: |
           aws sts get-caller-identity >> /dev/null 2>&1
 
-      - name: Initialize Terraform
-        run: |
-          cd "$infra_dir" && terraform init
+      # - name: Initialize Terraform
+      #   run: |
+      #     cd "$infra_dir" && terraform init
 
-      - name: Terraform Plan
-        run: |
-          cd "$infra_dir" && terraform plan -var-file="inputs.tfvars"
+      # - name: Terraform Plan
+      #   run: |
+      #     cd "$infra_dir" && terraform plan -var-file="inputs.tfvars"
 
-      - name: Terraform Apply
-        run: |
-          cd "$infra_dir" && terraform apply -var-file="inputs.tfvars" --auto-approve
+      # - name: Terraform Apply
+      #   run: |
+      #     cd "$infra_dir" && terraform apply -var-file="inputs.tfvars" --auto-approve
 
       - name: ECS Force New Deployment
         run: |
