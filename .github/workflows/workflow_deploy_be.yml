@@ -69,9 +69,9 @@ jobs:
 
       - name: Login and Push to ECR
         run: |
-
+ex        AWS_REGION="${{ inputs.aws_region }}"
           DOCKER_ROOT_URL="${{ secrets.ECR_URL }}"
-          aws ecr get-login-password | docker login --username AWS --password-stdin "$DOCKER_ROOT_URL"
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin "$DOCKER_ROOT_URL"
 
           DOCKER_URL="$DOCKER_ROOT_URL:${{ inputs.tag_name }}"
           docker tag "${{ secrets.ECR_URL }}:${{ inputs.tag_name }}" "$DOCKER_URL"
