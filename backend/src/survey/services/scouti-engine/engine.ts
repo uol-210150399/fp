@@ -45,7 +45,7 @@ export class ScoutiEngine {
         return (concernFollowUps.questions || []).filter(q => q.trim().length > 0);
       }
 
-      if (qualityResult.type !== QualityEnumValues.HIGH) {
+      if (qualityResult.type === QualityEnumValues.HIGH) {
         return []
       }
 
